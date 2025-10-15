@@ -1,13 +1,13 @@
-package com.group7.eduscrums_awards;
+package com.group7.eduscrum_awards;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class EduScrumsAwardsApplication {
+public class EduScrumAwardsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(EduScrumsAwardsApplication.class, args);
+		SpringApplication.run(EduScrumAwardsApplication.class, args);
 	}
 
 }
