@@ -12,7 +12,7 @@
 	<artifactId>eduscrum-awards</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>EduScrum Awards</name>
-	<description>A Gamified Platform for Evaluating Scrum Based Projects</description>
+	<description>A Gamified Platform for Evaluating Scrum-based Projects</description>
 
 	<properties>
 		<java.version>21</java.version>
@@ -69,6 +69,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>1.18.32</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
