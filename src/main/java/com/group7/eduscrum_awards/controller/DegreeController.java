@@ -27,7 +27,7 @@ public class DegreeController {
 
     /**
      * Endpoint to register a new Degree.
-     * Accessible via: POST http://localhost:8080/api/degrees
+     * Accessible via: POST http://localhost:8080/api/v1/degrees
      *
      * @param degreeCreateDTO The data for the new Degree, passed in the request body.
      * @return A ResponseEntity containing the created DegreeDTO and HTTP status 201.
@@ -36,7 +36,7 @@ public class DegreeController {
      */
     @PostMapping
     public ResponseEntity<DegreeDTO> registerDegree(@Valid @RequestBody DegreeCreateDTO degreeCreateDTO) {
-        // Call the service to perform the business logic
+
         DegreeDTO createdDegree = degreeService.registerDegree(degreeCreateDTO);
         // We return HttpStatus.CREATED (201) which is the standard for a successful POST operation.
         return new ResponseEntity<>(createdDegree, HttpStatus.CREATED);
