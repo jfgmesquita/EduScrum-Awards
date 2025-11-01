@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
+import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.model.Degree;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.service.DegreeService;
@@ -45,7 +46,7 @@ public class DegreeServiceImpl implements DegreeService {
         degreeRepository.findByName(degreeCreateDTO.getName())
             .ifPresent(existingDegree -> {
                 // If the Optional is 'present' (not empty), it means we found one.
-                throw new IllegalArgumentException("A Degree with the name '" + degreeCreateDTO.getName() + "' already exists.");
+                throw new DuplicateResourceException("A Degree with the name '" + degreeCreateDTO.getName() + "' already exists.");
             });
 
         // Map DTO to Entity
