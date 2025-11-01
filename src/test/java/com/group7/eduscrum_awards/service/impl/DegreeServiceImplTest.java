@@ -26,16 +26,12 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class DegreeServiceImplTest {
 
-    // This tells Mockito to create a "fake" (mock) version of the repository
     @Mock
     private DegreeRepository degreeRepository;
 
-    // This creates a real instance of DegreeServiceImpl and
-    // automatically "injects" the @Mock beans (like degreeRepository) into it.
     @InjectMocks
     private DegreeServiceImpl degreeService;
 
-    // Test Data
     private DegreeCreateDTO createDTO;
     private Degree existingDegree;
 
