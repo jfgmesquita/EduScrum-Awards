@@ -1,7 +1,9 @@
 package com.group7.eduscrum_awards.config;
 
+import com.group7.eduscrum_awards.model.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,14 +39,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) 
             
             .authorizeHttpRequests(authz -> authz
-                // TEMPORARY to test our endpoints in Postman, for example
-                // Allow ALL requests to any URL (e.g., /api/v1/degrees)
-                .requestMatchers("/**").permitAll() 
-                
-                // IN THE FUTURE, we will change this to be specific, like:
-                // .requestMatchers(HttpMethod.POST, "/api/v1/degrees").hasRole("ADMIN")
-                // .requestMatchers("/api/v1/auth/**").permitAll() // Allow login/register
-                // .anyRequest().authenticated() // Secure all other endpoints
+                // Allow user registration for everyone
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                // Lock down the Degree endpoints to ADMINS only
+                .requestMatchers("/api/v1/degrees/**").hasRole(Role.ADMIN.name())
+                // Secure everything else
+                .anyRequest().authenticated()
             );
 
         return http.build();
