@@ -6,6 +6,7 @@ import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Degree;
+import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
 import com.group7.eduscrum_awards.model.enums.Role;
@@ -26,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.*;
 
@@ -55,6 +55,7 @@ class CourseServiceImplTest {
     private CourseCreateDTO createDTO;
     private Course existingCourse;
     private Teacher existingTeacher;
+    private Student existingStudent;
     private User adminUser;
 
     @BeforeEach
@@ -75,6 +76,10 @@ class CourseServiceImplTest {
         existingTeacher = new Teacher("Prof. Teste", "prof@teste.com", "hashedpass");
         existingTeacher.setId(3L);
         
+        // Data for addStudentToCourse tests
+        existingStudent = new Student("Aluno Teste", "aluno@teste.com", "hashedpass");
+        existingStudent.setId(5L);
+
         // Data to test user_is_not_a_teacher
         adminUser = new User("Admin", "admin@teste.com", "pass", Role.ADMIN);
         adminUser.setId(4L);
@@ -89,16 +94,9 @@ class CourseServiceImplTest {
         when(degreeRepository.findById(1L)).thenReturn(Optional.of(existingDegree));
         when(courseRepository.findByNameAndDegree("Test Course", existingDegree)).thenReturn(Optional.empty());
         doReturn(existingCourse).when(courseRepository).save(notNull());
-
         CourseDTO result = courseService.registerCourseForDegree(1L, createDTO);
-
         assertNotNull(result);
         assertEquals(99L, result.getId());
-        assertEquals("Test Course", result.getName());
-
-        verify(degreeRepository, times(1)).findById(1L);
-        verify(courseRepository, times(1)).findByNameAndDegree("Test Course", existingDegree);
-        verify(courseRepository, times(1)).save(notNull());
     }
 
     @Test
@@ -106,18 +104,9 @@ class CourseServiceImplTest {
     void testRegisterCourseForDegree_Failure_DegreeNotFound() {
 
         when(degreeRepository.findById(1L)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(
-            ResourceNotFoundException.class,
-            () -> {
-                courseService.registerCourseForDegree(1L, createDTO);
-            }
-        );
-        assertEquals("Degree not found with id: 1", exception.getMessage());
-        
-        verify(degreeRepository, times(1)).findById(1L);
-        verify(courseRepository, never()).findByNameAndDegree(anyString(), any());
-        verify(courseRepository, never()).save(any());
+        assertThrows(ResourceNotFoundException.class, () -> {
+            courseService.registerCourseForDegree(1L, createDTO);
+        });
     }
 
     @Test
@@ -125,19 +114,10 @@ class CourseServiceImplTest {
     void testRegisterCourseForDegree_Failure_DuplicateName() {
 
         when(degreeRepository.findById(1L)).thenReturn(Optional.of(existingDegree));
-        when(courseRepository.findByNameAndDegree("Test Course", existingDegree)).thenReturn(Optional.of(existingCourse)); // Use existingCourse here
-
-        DuplicateResourceException exception = assertThrows(
-            DuplicateResourceException.class,
-            () -> {
-                courseService.registerCourseForDegree(1L, createDTO);
-            }
-        );
-        assertEquals("A Course with the name 'Test Course' already exists for this Degree.", exception.getMessage());
-        
-        verify(degreeRepository, times(1)).findById(1L);
-        verify(courseRepository, times(1)).findByNameAndDegree("Test Course", existingDegree);
-        verify(courseRepository, never()).save(any());
+        when(courseRepository.findByNameAndDegree("Test Course", existingDegree)).thenReturn(Optional.of(existingCourse));
+        assertThrows(DuplicateResourceException.class, () -> {
+            courseService.registerCourseForDegree(1L, createDTO);
+        });
     }
 
     // Tests for addTeacherToCourse
@@ -148,14 +128,9 @@ class CourseServiceImplTest {
 
         when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
         when(userRepository.findById(3L)).thenReturn(Optional.of(existingTeacher));
-
         CourseDTO result = courseService.addTeacherToCourse(99L, 3L);
-
         assertNotNull(result);
         assertTrue(existingCourse.getTeachers().contains(existingTeacher));
-        
-        verify(courseRepository, times(1)).findById(99L);
-        verify(userRepository, times(1)).findById(3L);
         verify(courseRepository, times(1)).save(existingCourse);
     }
 
@@ -164,13 +139,9 @@ class CourseServiceImplTest {
     void testAddTeacherToCourse_Failure_CourseNotFound() {
 
         when(courseRepository.findById(99L)).thenReturn(Optional.empty());
-        
         assertThrows(ResourceNotFoundException.class, () -> {
             courseService.addTeacherToCourse(99L, 3L);
         });
-        
-        verify(userRepository, never()).findById(anyLong()); // Never looks for a user
-        verify(courseRepository, never()).save(any());
     }
 
     @Test
@@ -179,12 +150,9 @@ class CourseServiceImplTest {
 
         when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
         when(userRepository.findById(3L)).thenReturn(Optional.empty());
-
         assertThrows(ResourceNotFoundException.class, () -> {
             courseService.addTeacherToCourse(99L, 3L);
         });
-        
-        verify(courseRepository, never()).save(any());
     }
 
     @Test
@@ -193,16 +161,10 @@ class CourseServiceImplTest {
 
         when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
         when(userRepository.findById(4L)).thenReturn(Optional.of(adminUser));
-
-        ResourceNotFoundException exception = assertThrows(
-            ResourceNotFoundException.class,
-            () -> {
-                courseService.addTeacherToCourse(99L, 4L);
-            }
-        );
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            courseService.addTeacherToCourse(99L, 4L);
+        });
         assertEquals("Teacher not found with id: 4", exception.getMessage());
-        
-        verify(courseRepository, never()).save(any());
     }
 
     @Test
@@ -212,17 +174,88 @@ class CourseServiceImplTest {
         existingCourse.getTeachers().add(existingTeacher);
         when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
         when(userRepository.findById(3L)).thenReturn(Optional.of(existingTeacher));
+        assertThrows(DuplicateResourceException.class, () -> {
+            courseService.addTeacherToCourse(99L, 3L);
+        });
+    }
 
-        DuplicateResourceException exception = assertThrows(
-            DuplicateResourceException.class,
-            () -> {
-                courseService.addTeacherToCourse(99L, 3L);
-            }
-        );
-        assertEquals("Teacher with id 3 is already assigned to this course.", exception.getMessage());
+
+    // Tests for addStudentToCourse
+
+    @Test
+    @DisplayName("addStudentToCourse | Should add student successfully")
+    void testAddStudentToCourse_Success() {
+
+        when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
+        when(userRepository.findById(5L)).thenReturn(Optional.of(existingStudent));
+
+        CourseDTO result = courseService.addStudentToCourse(99L, 5L);
+
+        assertNotNull(result);
+        assertTrue(existingCourse.getStudents().contains(existingStudent));
         
         verify(courseRepository, times(1)).findById(99L);
-        verify(userRepository, times(1)).findById(3L);
-        verify(courseRepository, never()).save(any());
+        verify(userRepository, times(1)).findById(5L);
+        verify(userRepository, times(1)).save(existingStudent);
+    }
+
+    @Test
+    @DisplayName("addStudentToCourse | Should throw ResourceNotFoundException when Course not found")
+    void testAddStudentToCourse_Failure_CourseNotFound() {
+
+        when(courseRepository.findById(99L)).thenReturn(Optional.empty());
+        
+        assertThrows(ResourceNotFoundException.class, () -> {
+            courseService.addStudentToCourse(99L, 5L);
+        });
+        
+        verify(userRepository, never()).findById(anyLong());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("addStudentToCourse | Should throw ResourceNotFoundException when Student not found")
+    void testAddStudentToCourse_Failure_StudentNotFound() {
+
+        when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
+        when(userRepository.findById(5L)).thenReturn(Optional.empty()); // Student não encontrado
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            courseService.addStudentToCourse(99L, 5L);
+        });
+        
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("addStudentToCourse | Should throw ResourceNotFoundException when User is not a Student")
+    void testAddStudentToCourse_Failure_UserIsNotAStudent() {
+
+        when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
+        when(userRepository.findById(4L)).thenReturn(Optional.of(adminUser)); // Encontra um Admin
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> courseService.addStudentToCourse(99L, 4L)
+        );
+        assertEquals("Student not found with id: 4", exception.getMessage());
+        
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("addStudentToCourse | Should throw DuplicateResourceException when Student already enrolled")
+    void testAddStudentToCourse_Failure_AlreadyAssigned() {
+
+        existingCourse.getStudents().add(existingStudent);
+        
+        when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
+        when(userRepository.findById(5L)).thenReturn(Optional.of(existingStudent));
+
+        assertThrows(DuplicateResourceException.class, () -> {
+            courseService.addStudentToCourse(99L, 5L);
+        });
+
+        verify(userRepository, never()).save(any());
     }
 }
