@@ -55,4 +55,20 @@ public class CourseController {
         // Return 200 OK with the updated course
         return new ResponseEntity<>(updatedCourse, HttpStatus.OK);
     }
+
+    /**
+     * Endpoint to enroll an existing Student in an existing Course.
+     * Accessible via: POST http://localhost:8080/api/v1/courses/{courseId}/students/{studentId}
+     *
+     * @param courseId The ID of the course.
+     * @param studentId The ID of the student to be enrolled.
+     * @return A ResponseEntity containing the updated CourseDTO and HTTP status 200.
+     */
+    @PostMapping("/courses/{courseId}/students/{studentId}")
+    public ResponseEntity<CourseDTO> addStudentToCourse(@PathVariable Long courseId, @PathVariable Long studentId) {
+        
+        CourseDTO updatedCourse = courseService.addStudentToCourse(courseId, studentId);
+        // Return 200 OK with the updated course
+        return new ResponseEntity<>(updatedCourse, HttpStatus.OK);
+    }
 }
