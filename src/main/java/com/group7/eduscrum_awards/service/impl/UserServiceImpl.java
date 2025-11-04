@@ -3,6 +3,9 @@ package com.group7.eduscrum_awards.service.impl;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
+import com.group7.eduscrum_awards.model.enums.Role;
+import com.group7.eduscrum_awards.model.Student;
+import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.UserService;
@@ -29,10 +32,12 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Registers a new user, performing validation and password hashing.
+     * This implementation instantiates a User (Admin), Teacher, or Student based on the provided Role.
      *
      * @param userCreateDTO the DTO containing the registration data
      * @return a {@link UserDTO} representing the created user
      * @throws DuplicateResourceException if the email is already in use
+     * @throws IllegalArgumentException if the role is null or invalid
      */
     @Override
     @Transactional
@@ -47,15 +52,47 @@ public class UserServiceImpl implements UserService {
         // Hash the password
         String hashedPassword = passwordEncoder.encode(userCreateDTO.getPassword());
 
-        // Map DTO to Entity
-        User newUser = new User(
-            userCreateDTO.getName(),
-            userCreateDTO.getEmail(),
-            hashedPassword,
-            userCreateDTO.getRole()
-        );
+        // Map DTO to the correct Entity based on Role
+        User newUser;
+        Role role = userCreateDTO.getRole();
 
-        // Save the new User
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null.");
+        }
+
+        switch (role) {
+            case ADMIN:
+                newUser = new User(
+                    userCreateDTO.getName(),
+                    userCreateDTO.getEmail(),
+                    hashedPassword,
+                    Role.ADMIN
+                );
+                break;
+            
+            case TEACHER:
+                newUser = new Teacher(
+                    userCreateDTO.getName(),
+                    userCreateDTO.getEmail(),
+                    hashedPassword
+                    // The Teacher constructor automatically sets Role.TEACHER
+                );
+                break;
+
+            case STUDENT:
+                newUser = new Student(
+                    userCreateDTO.getName(),
+                    userCreateDTO.getEmail(),
+                    hashedPassword
+                    // The Student constructor automatically sets Role.STUDENT
+                );
+                break;
+            
+            default:
+                throw new IllegalArgumentException("Unsupported role: " + role);
+        }
+
+        // Save the new User (JPA will handle the user_type)
         User savedUser = userRepository.save(newUser);
 
         // Map Entity to Response DTO
