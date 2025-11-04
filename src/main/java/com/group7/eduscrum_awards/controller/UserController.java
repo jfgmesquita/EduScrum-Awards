@@ -38,7 +38,7 @@ public class UserController {
      */
     @PostMapping
     public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserCreateDTO userCreateDTO) {
-
+        
         UserDTO newUser = userService.registerUser(userCreateDTO);
         // Return the "safe" DTO (without password) and a 201 Created status
         return new ResponseEntity<>(newUser, HttpStatus.CREATED);
