@@ -56,4 +56,23 @@ public class GlobalExceptionHandler {
         // Return the clean response with the 404 status code
         return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
     }
+
+    /**
+     * Handles built-in Java IllegalArgumentException.
+     * @ExceptionHandler: Catches this specific exception.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Object> handleIllegalArgumentException(
+            IllegalArgumentException ex, WebRequest request) {
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.BAD_REQUEST.value()); // 400 Bad Request
+        body.put("error", "Bad Request");
+        body.put("message", ex.getMessage()); // The message from the exception
+        body.put("path", request.getDescription(false).replace("uri=", ""));
+
+        // Retorna a resposta limpa com o status 400
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
 }
