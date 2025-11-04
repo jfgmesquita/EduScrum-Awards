@@ -1,5 +1,7 @@
 package com.group7.eduscrum_awards.model;
 
+import java.util.HashSet;
+import java.util.Set;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
@@ -23,12 +25,46 @@ public class Degree {
     private String name;
 
     /**
+     * The set of courses that belong to this degree.
+     * This is the "One" side of a One-to-Many relationship.
+     * mappedBy = "degree": Instructs JPA to look for the 'degree'
+     * field in the 'Course' class to locate the foreign-key configuration.
+     * cascade = CascadeType.ALL: If a Degree is deleted, all associated Course entities will also be deleted.
+     * orphanRemoval = true: Removing a Course from this set will delete it from the database.
+     */
+    @OneToMany(
+        mappedBy = "degree",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.LAZY
+    )
+    private Set<Course> courses = new HashSet<>();
+
+    /**
      * Convenience constructor to create a Degree with a name.
      *
      * @param name the degree name (not null)
      */
     public Degree(String name) {
         this.name = name;
+    }
+
+    /**
+     * Adds a course to this degree and sets up the bidirectional relationship.
+     * @param course the course to add
+     */
+    public void addCourse(Course course) {
+        this.courses.add(course);
+        course.setDegree(this); // Keeps both sides in sync
+    }
+
+    /**
+     * Removes a course from this degree and breaks the bidirectional relationship.
+     * @param course the course to remove
+     */
+    public void removeCourse(Course course) {
+        this.courses.remove(course);
+        course.setDegree(null); // Breaks the association
     }
 
     /**
