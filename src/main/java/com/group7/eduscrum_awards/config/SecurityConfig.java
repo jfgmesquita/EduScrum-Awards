@@ -53,6 +53,9 @@ public class SecurityConfig {
                 // Lock down the Project Teams creation endpoint to TEACHERS only
                 .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/teams").hasRole(Role.TEACHER.name())
                 
+                // Lock down the Team Student assignment endpoint to TEACHERS only
+                .requestMatchers(HttpMethod.POST, "/api/v1/teams/{teamId}/students/{studentId}").hasRole(Role.TEACHER.name())
+                
                 // Secure everything else
                 .anyRequest().authenticated()
             );
