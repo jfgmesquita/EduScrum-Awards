@@ -41,4 +41,21 @@ public class TeamController {
         // Return the new team and a 201 Created status
         return new ResponseEntity<>(newTeam, HttpStatus.CREATED);
     }
+
+    /**
+     * Endpoint to assign an existing Student to an existing Team.
+     * This endpoint is intended to be called by a Teacher.
+     * Accessible via: POST http://localhost:8080/api/v1/teams/{teamId}/students/{studentId}
+     *
+     * @param teamId The ID of the Team.
+     * @param studentId The ID of the Student to be assigned.
+     * @return A ResponseEntity containing the updated TeamDTO and HTTP status 200.
+     */
+    @PostMapping("/teams/{teamId}/students/{studentId}")
+    public ResponseEntity<TeamDTO> addStudentToTeam(@PathVariable Long teamId, @PathVariable Long studentId) {
+        
+        TeamDTO updatedTeam = teamService.addStudentToTeam(teamId, studentId);
+        // Return the updated team and a 200 OK status
+        return new ResponseEntity<>(updatedTeam, HttpStatus.OK);
+    }
 }
