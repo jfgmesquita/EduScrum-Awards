@@ -6,6 +6,8 @@ import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Team;
+import com.group7.eduscrum_awards.model.Student;
+import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.service.TeamService;
@@ -18,11 +20,13 @@ public class TeamServiceImpl implements TeamService {
 
     private final TeamRepository teamRepository;
     private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public TeamServiceImpl(TeamRepository teamRepository, ProjectRepository projectRepository) {
+    public TeamServiceImpl(TeamRepository teamRepository, ProjectRepository projectRepository, UserRepository userRepository) {
         this.teamRepository = teamRepository;
         this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -61,5 +65,40 @@ public class TeamServiceImpl implements TeamService {
 
         // Return the DTO
         return new TeamDTO(savedTeam);
+    }
+
+    /**
+     * Assigns an existing Student to an existing Team.
+     *
+     * @param teamId The ID of the Team.
+     * @param studentId The ID of the Student to assign.
+     * @return A DTO of the updated Team.
+     */
+    @Override
+    @Transactional
+    public TeamDTO addStudentToTeam(Long teamId, Long studentId) {
+        
+        // Find the Team
+        Team team = teamRepository.findById(teamId)
+            .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
+
+        // Find the User and validate it's a Student
+        Student student = (Student) userRepository.findById(studentId)
+            .filter(user -> user instanceof Student)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        // Check for duplicate assignment
+        if (team.getMembers().contains(student)) {
+            throw new DuplicateResourceException("Student with id " + studentId + " is already in this team.");
+        }
+
+        // Add the relationship
+        team.addStudent(student);
+        
+        // Save the "owning" side
+        teamRepository.save(team);
+
+        // Return the Team DTO
+        return new TeamDTO(team);
     }
 }
