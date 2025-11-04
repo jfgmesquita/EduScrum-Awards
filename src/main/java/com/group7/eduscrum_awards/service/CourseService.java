@@ -10,13 +10,15 @@ import com.group7.eduscrum_awards.dto.CourseDTO;
 public interface CourseService {
 
     /**
-     * Registers a new Course in the system.
+     * Registers a new Course and associates it with a specific Degree.
      *
+     * @param degreeId The ID of the Degree this course will belong to.
      * @param courseCreateDTO The DTO containing the data for the new Course.
      * @return The DTO of the newly created Course.
-     * @throws DuplicateResourceException if a Course with the same name already exists.
+     * @throws ResourceNotFoundException if the degreeId does not exist.
+     * @throws DuplicateResourceException if a Course with the same name already exists within that Degree.
      */
-    CourseDTO registerCourse(CourseCreateDTO courseCreateDTO);
+    CourseDTO registerCourseForDegree(Long degreeId, CourseCreateDTO courseCreateDTO);
 
     // Future methods can be added here, e.g.:
     // List<CourseDTO> getAllCourses();
