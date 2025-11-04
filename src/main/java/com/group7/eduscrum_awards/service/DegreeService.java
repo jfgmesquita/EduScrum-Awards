@@ -24,8 +24,14 @@ public interface DegreeService {
      */
     DegreeDTO registerDegree(DegreeCreateDTO degreeCreateDTO);
 
-    // Additional operations can be added later, for example:
-    // List<DegreeDTO> getAllDegrees();
-    // Optional<DegreeDTO> getDegreeByName(String name);
-    // void deleteDegree(Long id);
+    /**
+     * Assigns an existing Student to an existing Degree.
+     *
+     * @param degreeId The ID of the Degree.
+     * @param studentId The ID of the Student to assign.
+     * @return A DTO of the updated Degree.
+     * @throws ResourceNotFoundException if either ID is not found or user is not a Student.
+     * @throws DuplicateResourceException if the student is already assigned to this degree.
+     */
+    DegreeDTO addStudentToDegree(Long degreeId, Long studentId);
 }
