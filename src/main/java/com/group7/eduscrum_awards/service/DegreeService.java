@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service;
 
 import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
+import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 
 /**
  * Service Interface (Contract) that provide the business logic for creating
@@ -19,7 +20,7 @@ public interface DegreeService {
      *
      * @param degreeCreateDTO the data required to create the degree; must not be null
      * @return the created {@link DegreeDTO} containing the generated id and stored values
-     * @throws RuntimeException if a degree with the same name already exists or if the input is invalid
+     * @throws DuplicateResourceException if a degree with the same name already exists or if the input is invalid
      */
     DegreeDTO registerDegree(DegreeCreateDTO degreeCreateDTO);
 
