@@ -33,6 +33,17 @@ public interface CourseService {
      */
     CourseDTO addTeacherToCourse(Long courseId, Long teacherId);
 
+    /**
+     * Enrolls an existing Student in an existing Course.
+     *
+     * @param courseId The ID of the course.
+     * @param studentId The ID of the student to enroll.
+     * @return A DTO of the updated Course.
+     * @throws ResourceNotFoundException if either ID is not found or user is not a Student.
+     * @throws DuplicateResourceException if the student is already enrolled in this course.
+     */
+    CourseDTO addStudentToCourse(Long courseId, Long studentId);
+
     // Future methods can be added here, e.g.:
     // List<CourseDTO> getAllCourses();
     // CourseDTO addTeacherToCourse(Long courseId, Long teacherId);
