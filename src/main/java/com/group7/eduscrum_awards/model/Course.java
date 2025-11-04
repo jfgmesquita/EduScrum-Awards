@@ -4,12 +4,10 @@ import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-/**
- * Represents a Course in the system (e.g., "Software Quality").
- */
+/** Represents a Course in the system (e.g., "Software Quality"). */
 @NoArgsConstructor
 @Getter
 @Setter
@@ -24,17 +22,14 @@ public class Course {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    /**
-     * The list of teachers associated with this course.
-     * This side is the "owner" of the relationship.
-     */
-    @ManyToMany(fetch = FetchType.LAZY) // Performance: Don't load teachers unless asked
+    /** The set of teachers associated with this course. */
+    @ManyToMany(fetch = FetchType.LAZY) 
     @JoinTable(
-        name = "course_teachers", // Name of the new join table
-        joinColumns = @JoinColumn(name = "course_id"), // FK to this class
-        inverseJoinColumns = @JoinColumn(name = "teacher_id") // FK to the other class
+        name = "course_teachers", 
+        joinColumns = @JoinColumn(name = "course_id"),
+        inverseJoinColumns = @JoinColumn(name = "teacher_id")
     )
-    private List<Teacher> teachers = new ArrayList<>();
+    private Set<Teacher> teachers = new HashSet<>();
 
     /**
      * The degree this course belongs to.
@@ -44,6 +39,13 @@ public class Course {
     @JoinColumn(name = "degree_id", nullable = false)
     private Degree degree;
 
+    /** The set of students enrolled in this course. */
+    @ManyToMany(
+        mappedBy = "courses", // Mapped by the 'courses' field in the Student class
+        fetch = FetchType.LAZY
+    )
+    private Set<Student> students = new HashSet<>();
+
     /**
      * Convenience constructor to create a Course with a name.
      * @param name The name of the course.
@@ -52,13 +54,7 @@ public class Course {
         this.name = name;
     }
 
-    /**
-     * Equality is based on the identifier when it is set.
-     * Two transient instances (with null id) are considered different.
-     *
-     * @param o object to compare
-     * @return true if both objects are the same or have the same non-null id
-     */
+    /** Equality is based on the identifier. */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,7 +63,7 @@ public class Course {
         return id != null && id.equals(course.id);
     }
 
-    /** Uses the class hash when id is null to avoid collisions for transient instances. */
+    /** Uses the class hash. */
     @Override
     public int hashCode() {
         return getClass().hashCode();
