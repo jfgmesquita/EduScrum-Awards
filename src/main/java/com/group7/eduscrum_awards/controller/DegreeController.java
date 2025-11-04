@@ -14,14 +14,13 @@ import org.springframework.web.bind.annotation.*;
  * This class exposes endpoints for the frontend to interact with.
  */
 @RestController
-@RequestMapping("/api/v1/degrees") // Base URL for all endpoints in this controller
+@RequestMapping("/api/v1/degrees")
 public class DegreeController {
 
     private final DegreeService degreeService;
 
     @Autowired
     public DegreeController(DegreeService degreeService) {
-        // We inject the SERVICE INTERFACE, not the implementation
         this.degreeService = degreeService;
     }
 
@@ -36,7 +35,7 @@ public class DegreeController {
      */
     @PostMapping
     public ResponseEntity<DegreeDTO> registerDegree(@Valid @RequestBody DegreeCreateDTO degreeCreateDTO) {
-
+        
         DegreeDTO createdDegree = degreeService.registerDegree(degreeCreateDTO);
         // We return HttpStatus.CREATED (201) which is the standard for a successful POST operation.
         return new ResponseEntity<>(createdDegree, HttpStatus.CREATED);
