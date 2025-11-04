@@ -41,6 +41,17 @@ public class Degree {
     private Set<Course> courses = new HashSet<>();
 
     /**
+     * The set of students enrolled in this degree.
+     * This is the "One" side of the One-to-Many relationship.
+     */
+    @OneToMany(
+        mappedBy = "degree", // Mapped by the 'degree' field in the Student class
+        fetch = FetchType.LAZY,
+        cascade = { CascadeType.PERSIST, CascadeType.MERGE } 
+    )
+    private Set<Student> students = new HashSet<>();
+
+    /**
      * Convenience constructor to create a Degree with a name.
      *
      * @param name the degree name (not null)
@@ -65,6 +76,24 @@ public class Degree {
     public void removeCourse(Course course) {
         this.courses.remove(course);
         course.setDegree(null); // Breaks the association
+    }
+
+    /**
+     * Enrrols a student to this degree and sets up the bidirectional relationship.
+     * @param student the student to enroll
+     */
+    public void addStudent(Student student) {
+        this.students.add(student);
+        student.setDegree(this);
+    }
+
+    /**
+     * Unenrolls a student from this degree and breaks the bidirectional relationship.
+     * @param student the student to unenroll
+     */    
+    public void removeStudent(Student student) {
+        this.students.remove(student);
+        student.setDegree(null);
     }
 
     /**
