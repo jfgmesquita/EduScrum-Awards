@@ -43,6 +43,13 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO registerUser(UserCreateDTO userCreateDTO) {
         
+        // Validate Role
+        Role role = userCreateDTO.getRole();
+
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null.");
+        }
+
         // Check for duplicate email
         userRepository.findByEmail(userCreateDTO.getEmail())
             .ifPresent(user -> {
@@ -54,12 +61,6 @@ public class UserServiceImpl implements UserService {
 
         // Map DTO to the correct Entity based on Role
         User newUser;
-        Role role = userCreateDTO.getRole();
-
-        if (role == null) {
-            throw new IllegalArgumentException("Role cannot be null.");
-        }
-
         switch (role) {
             case ADMIN:
                 newUser = new User(
