@@ -36,7 +36,7 @@ public class DegreeServiceImpl implements DegreeService {
      *
      * @param degreeCreateDTO the DTO containing the information required to create the degree
      * @return a {@link DegreeDTO} representing the persisted degree (including generated id)
-     * @throws IllegalArgumentException when a degree with the same name already exists
+     * @throws DuplicateResourceException when a degree with the same name already exists
      */
     @Override
     @Transactional
