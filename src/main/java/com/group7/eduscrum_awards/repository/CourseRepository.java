@@ -1,6 +1,7 @@
 package com.group7.eduscrum_awards.repository;
 
 import com.group7.eduscrum_awards.model.Course;
+import com.group7.eduscrum_awards.model.Degree;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
@@ -15,11 +16,11 @@ import java.util.Optional;
 public interface CourseRepository extends JpaRepository<Course, Long> {
 
     /**
-     * Finds a course by its unique name.
+     * Finds a course by its name and its associated degree.
      *
-     * @param name The course name to search for.
-     * @return an {@link Optional} containing the matching {@link Course} if found,
-     * or an empty Optional if no match is found.
+     * @param name The name of the course.
+     * @param degree The name of the Degree.
+     * @return an {@link Optional} containing the course if a match is found.
      */
-    Optional<Course> findByName(String name);
+    Optional<Course> findByNameAndDegree(String name, Degree degree);
 }
