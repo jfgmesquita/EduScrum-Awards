@@ -30,6 +30,14 @@ public class Teacher extends User {
     @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY) // Performance: Don't load courses unless asked
     private List<Course> courses = new ArrayList<>();
 
+    /**
+     * Convenience constructor to create a new Teacher.
+     * Automatically sets the Role to TEACHER.
+     *
+     * @param name The teacher's name.
+     * @param email The teacher's email (must be unique).
+     * @param password The teacher's hashed password.
+     */
     public Teacher(String name, String email, String password) {
         super(name, email, password, Role.TEACHER);
     }
