@@ -37,6 +37,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-    // Additional @ExceptionHandler methods can be added later, for example:
-    // ResourceNotFoundException (for 404)
+    /**
+     * This method handles only ResourceNotFoundException.
+     * @ExceptionHandler: Catches the specific exception.
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Object> handleResourceNotFoundException(
+            ResourceNotFoundException ex, WebRequest request) {
+
+        // Create a clean JSON response body
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("timestamp", LocalDateTime.now());
+        body.put("status", HttpStatus.NOT_FOUND.value()); // 404
+        body.put("error", "Not Found");
+        body.put("message", ex.getMessage()); // The message from the service class
+        body.put("path", request.getDescription(false).replace("uri=", "")); // The URL
+
+        // Return the clean response with the 404 status code
+        return new ResponseEntity<>(body, HttpStatus.NOT_FOUND);
+    }
 }
