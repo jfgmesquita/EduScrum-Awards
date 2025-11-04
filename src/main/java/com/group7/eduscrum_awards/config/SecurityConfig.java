@@ -39,10 +39,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) 
             
             .authorizeHttpRequests(authz -> authz
+            
                 // Allow user registration for everyone
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+
                 // Lock down the Degree endpoints to ADMINS only
                 .requestMatchers("/api/v1/degrees/**").hasRole(Role.ADMIN.name())
+
+                // Lock down the Course endpoints to ADMINS only
+                .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name())
+
                 // Secure everything else
                 .anyRequest().authenticated()
             );
