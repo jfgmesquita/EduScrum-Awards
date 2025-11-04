@@ -49,7 +49,10 @@ public class SecurityConfig {
                 // Lock down the Course endpoints to ADMINS only
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
                 .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name())
-
+                
+                // Lock down the Project Teams creation endpoint to TEACHERS only
+                .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/teams").hasRole(Role.TEACHER.name())
+                
                 // Secure everything else
                 .anyRequest().authenticated()
             );
