@@ -47,11 +47,30 @@ public class Course {
     private Set<Student> students = new HashSet<>();
 
     /**
+     * The set of projects within this course.
+     * This is the "One" side of the One-to-Many relationship.
+     */
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Project> projects = new HashSet<>();
+
+    /**
      * Convenience constructor to create a Course with a name.
      * @param name The name of the course.
      */
     public Course(String name) {
         this.name = name;
+    }
+
+    /** Helper method to add a project to this course. */
+    public void addProject(Project project) {
+        this.projects.add(project);
+        project.setCourse(this);
+    }
+
+    /** Helper method to remove a project from this course. */
+    public void removeProject(Project project) {
+        this.projects.remove(project);
+        project.setCourse(null);
     }
 
     /** Equality is based on the identifier. */
