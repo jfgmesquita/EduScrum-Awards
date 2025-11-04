@@ -21,7 +21,7 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
     /**
@@ -35,6 +35,14 @@ public class Course {
         inverseJoinColumns = @JoinColumn(name = "teacher_id") // FK to the other class
     )
     private List<Teacher> teachers = new ArrayList<>();
+
+    /**
+     * The degree this course belongs to.
+     * This is the "many" side of the One-to-Many relationship.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "degree_id", nullable = false)
+    private Degree degree;
 
     /**
      * Convenience constructor to create a Course with a name.
