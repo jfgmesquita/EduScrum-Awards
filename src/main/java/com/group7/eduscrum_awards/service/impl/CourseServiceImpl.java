@@ -3,51 +3,54 @@ package com.group7.eduscrum_awards.service.impl;
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
+import com.group7.eduscrum_awards.model.Degree;
 import com.group7.eduscrum_awards.repository.CourseRepository;
+import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.service.CourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Service Implementation for managing Course entities.
- * Implements the {@link CourseService} contract.
- */
 @Service
 public class CourseServiceImpl implements CourseService {
 
     private final CourseRepository courseRepository;
+    private final DegreeRepository degreeRepository;
 
     @Autowired
-    public CourseServiceImpl(CourseRepository courseRepository) {
+    public CourseServiceImpl(CourseRepository courseRepository, DegreeRepository degreeRepository) {
         this.courseRepository = courseRepository;
+        this.degreeRepository = degreeRepository;
     }
 
     /**
-     * Registers a new course, performing a uniqueness check on the name.
-     *
-     * @param courseCreateDTO the DTO containing the course data
-     * @return a {@link CourseDTO} representing the created course
-     * @throws DuplicateResourceException if the course name is already in use
+     * Registers a new course for a specific degree.
      */
     @Override
     @Transactional
-    public CourseDTO registerCourse(CourseCreateDTO courseCreateDTO) {
+    public CourseDTO registerCourseForDegree(Long degreeId, CourseCreateDTO courseCreateDTO) {
         
-        // Check for duplicate name
-        courseRepository.findByName(courseCreateDTO.getName())
-            .ifPresent(course -> {
-                throw new DuplicateResourceException("A Course with the name '" + courseCreateDTO.getName() + "' already exists.");
+        // Find the Degree (the parent entity)
+        Degree degree = degreeRepository.findById(degreeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Degree not found with id: " + degreeId));
+
+        // Check for duplicates WITHIN that Degree
+        // (using the repository method that checks by name and degree)
+        courseRepository.findByNameAndDegree(courseCreateDTO.getName(), degree)
+            .ifPresent(c -> {
+                throw new DuplicateResourceException("A Course with the name '" + courseCreateDTO.getName() + "' already exists for this Degree.");
             });
 
-        // Map DTO to Entity (course is created with an empty list of teachers)
+        // Create the Course entity
         Course newCourse = new Course(courseCreateDTO.getName());
+        
+        // Link the entities (using the Degree helper method)
+        degree.addCourse(newCourse);
 
-        // Save the new Course
+        // Save the new Course entity
         Course savedCourse = courseRepository.save(newCourse);
-
-        // Map Entity to Response DTO
         return new CourseDTO(savedCourse);
     }
 }
