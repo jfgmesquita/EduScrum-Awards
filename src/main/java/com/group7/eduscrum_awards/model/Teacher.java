@@ -7,8 +7,8 @@ import jakarta.persistence.ManyToMany;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import com.group7.eduscrum_awards.model.enums.Role;
 
 /**
@@ -19,44 +19,34 @@ import com.group7.eduscrum_awards.model.enums.Role;
 @Getter
 @Setter
 @Entity
-@DiscriminatorValue("TEACHER") // This identifies it as a 'TEACHER' in the 'users' table
+@DiscriminatorValue("TEACHER")
 public class Teacher extends User {
 
-    /**
-     * The courses this teacher is associated with.
-     * 'mappedBy = "teachers"': Tells JPA that the 'Course' side
-     * is the owner of this ManyToMany relationship.
-     */
-    @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY) // Performance: Don't load courses unless asked
-    private List<Course> courses = new ArrayList<>();
+    /** The set of courses this teacher is associated with. */
+    @ManyToMany(mappedBy = "teachers", fetch = FetchType.LAZY)
+    private Set<Course> courses = new HashSet<>();
 
-    /**
-     * Convenience constructor to create a new Teacher.
-     * Automatically sets the Role to TEACHER.
-     *
-     * @param name The teacher's name.
-     * @param email The teacher's email (must be unique).
-     * @param password The teacher's hashed password.
-     */
+    /** Convenience constructor to create a new Teacher. */
     public Teacher(String name, String email, String password) {
         super(name, email, password, Role.TEACHER);
     }
 
     /**
-     * Adds a course to this teacher's list.
+     * Adds a course to this teacher's set.
+     * If the course is already in the set, this operation does nothing.
      * @param course The course to add.
      */
     public void addCourse(Course course) {
         this.courses.add(course);
-        course.getTeachers().add(this); // Keep the other side in sync
+        course.getTeachers().add(this);
     }
 
     /**
-     * Removes a course from this teacher's list.
+     * Removes a course from this teacher's set.
      * @param course The course to remove.
      */
     public void removeCourse(Course course) {
         this.courses.remove(course);
-        course.getTeachers().remove(this); // Keep the other side in sync
+        course.getTeachers().remove(this);
     }
 }
