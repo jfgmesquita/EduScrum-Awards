@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/degrees/**").hasRole(Role.ADMIN.name())
                 
                 // Lock down the Course endpoints to ADMINS only
+                .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
                 .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name())
 
                 // Secure everything else
