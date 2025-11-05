@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage()); // The message from the exception
         body.put("path", request.getDescription(false).replace("uri=", ""));
 
-        // Retorna a resposta limpa com o status 400
+        // Return the clean response with the 400 status code
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }
 }

@@ -79,7 +79,7 @@ public class Degree {
     }
 
     /**
-     * Enrrols a student to this degree and sets up the bidirectional relationship.
+     * Enrolls a student to this degree and sets up the bidirectional relationship.
      * @param student the student to enroll
      */
     public void addStudent(Student student) {
