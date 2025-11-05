@@ -218,7 +218,7 @@ class CourseServiceImplTest {
     void testAddStudentToCourse_Failure_StudentNotFound() {
 
         when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
-        when(userRepository.findById(5L)).thenReturn(Optional.empty()); // Student não encontrado
+        when(userRepository.findById(5L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
             courseService.addStudentToCourse(99L, 5L);
@@ -232,7 +232,7 @@ class CourseServiceImplTest {
     void testAddStudentToCourse_Failure_UserIsNotAStudent() {
 
         when(courseRepository.findById(99L)).thenReturn(Optional.of(existingCourse));
-        when(userRepository.findById(4L)).thenReturn(Optional.of(adminUser)); // Encontra um Admin
+        when(userRepository.findById(4L)).thenReturn(Optional.of(adminUser));
 
         ResourceNotFoundException exception = assertThrows(
             ResourceNotFoundException.class,
