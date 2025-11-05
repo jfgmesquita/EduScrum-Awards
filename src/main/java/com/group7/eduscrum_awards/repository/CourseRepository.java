@@ -19,7 +19,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
      * Finds a course by its name and its associated degree.
      *
      * @param name The name of the course.
-     * @param degree The name of the Degree.
+     * @param degree The Degree entit.
      * @return an {@link Optional} containing the course if a match is found.
      */
     Optional<Course> findByNameAndDegree(String name, Degree degree);
