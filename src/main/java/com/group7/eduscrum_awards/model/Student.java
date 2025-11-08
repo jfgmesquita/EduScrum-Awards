@@ -40,9 +40,9 @@ public class Student extends User {
     )
     private Set<Course> courses = new HashSet<>();
 
-    /** The set of teams this student is a member of. */
-    @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
-    private Set<Team> teams = new HashSet<>();
+    /** The list of team memberships this student has across all projects. */
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TeamMember> teamMemberships = new HashSet<>();
 
     /**
      * Convenience constructor to create a new Student.
@@ -72,23 +72,5 @@ public class Student extends User {
     public void removeCourse(Course course) {
         this.courses.remove(course);
         course.getStudents().remove(this); // Keep both sides in sync
-    }
-
-    /** 
-     * Adds a team to this student.
-     * @param team The team to add
-     */
-    public void addTeam(Team team) {
-        this.teams.add(team);
-        team.getMembers().add(this);
-    }
-
-    /** 
-     * Removes a team from this student.
-     * @param team The team to remove
-     */
-    public void removeTeam(Team team) {
-        this.teams.remove(team);
-        team.getMembers().remove(this);
     }
 }
