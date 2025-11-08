@@ -61,12 +61,6 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!-- In-memory DB for tests so Spring Boot can auto-configure a DataSource -->
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope> <!-- Only available during tests -->
-		</dependency>
 	</dependencies>
 
 	<build>
