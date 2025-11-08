@@ -2,14 +2,17 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Team;
+import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamRepository;
+import com.group7.eduscrum_awards.repository.TeamMemberRepository;
 import com.group7.eduscrum_awards.service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,12 +24,14 @@ public class TeamServiceImpl implements TeamService {
     private final TeamRepository teamRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Autowired
-    public TeamServiceImpl(TeamRepository teamRepository, ProjectRepository projectRepository, UserRepository userRepository) {
+    public TeamServiceImpl(TeamRepository teamRepository, ProjectRepository projectRepository, UserRepository userRepository, TeamMemberRepository teamMemberRepository) {
         this.teamRepository = teamRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.teamMemberRepository = teamMemberRepository;
     }
 
     /**
@@ -67,36 +72,42 @@ public class TeamServiceImpl implements TeamService {
         return new TeamDTO(savedTeam);
     }
 
-    /**
-     * Assigns an existing Student to an existing Team.
-     *
-     * @param teamId The ID of the Team.
-     * @param studentId The ID of the Student to assign.
-     * @return A DTO of the updated Team.
-     */
+    /** Assigns an existing Student to an existing Team with a specific role. */
     @Override
     @Transactional
-    public TeamDTO addStudentToTeam(Long teamId, Long studentId) {
+    public TeamDTO addMemberToTeam(Long teamId, TeamMemberCreateDTO createDTO) {
         
         // Find the Team
         Team team = teamRepository.findById(teamId)
             .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
 
-        // Find the User and validate it's a Student
-        Student student = (Student) userRepository.findById(studentId)
+        // Find the Student
+        Student student = (Student) userRepository.findById(createDTO.getStudentId())
             .filter(user -> user instanceof Student)
-            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + createDTO.getStudentId()));
+            
+        // Find the Project
+        Project project = team.getProject();
 
-        // Check for duplicate assignment
-        if (team.getMembers().contains(student)) {
-            throw new DuplicateResourceException("Student with id " + studentId + " is already in this team.");
-        }
+        // Check if the Student is already in a Team for this Project
+        teamMemberRepository.findByStudentAndProject(student, project)
+            .ifPresent(member -> {
+                // The student is already assigned to a team in this project
+                throw new DuplicateResourceException("Student with id " + student.getId() + " is already on a team for this project (Team ID: " + member.getTeam().getId() + ")");
+            });
 
-        // Add the relationship
-        team.addStudent(student);
-        
-        // Save the "owning" side
-        teamRepository.save(team);
+        // Create the new association entity
+        TeamMember newMembership = new TeamMember();
+        newMembership.setTeam(team);
+        newMembership.setStudent(student);
+        newMembership.setTeamRole(createDTO.getTeamRole());
+        newMembership.setProject(project);
+
+        // Save the new entity directly
+        teamMemberRepository.save(newMembership);
+
+        // Add to the 'in-memory' set if needed
+        team.getMembers().add(newMembership);
 
         // Return the Team DTO
         return new TeamDTO(team);
