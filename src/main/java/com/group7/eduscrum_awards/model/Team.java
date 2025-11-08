@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
+import com.group7.eduscrum_awards.model.enums.TeamRole;
 
 /**
  * Represents a Project Team.
@@ -36,17 +37,9 @@ public class Team {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    /**
-     * The set of students who are members of this team.
-     * This is the "owning" side of the Many-to-Many relationship.
-     */
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "team_members",
-        joinColumns = @JoinColumn(name = "team_id"), // FK to this entity
-        inverseJoinColumns = @JoinColumn(name = "student_id") // FK to the other entity
-    )
-    private Set<Student> members = new HashSet<>();
+    /** The list of memberships (Student + Role) for this team. */
+    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TeamMember> members = new HashSet<>();
 
     /**
      * Convenience constructor.
@@ -60,22 +53,25 @@ public class Team {
         this.project = project;
     }
     
-    /** 
-    * Adds a student to the team.
-    * @param student The student to add
-    */
-    public void addStudent(Student student) {
-        this.members.add(student);
-        student.getTeams().add(this);
+    /**
+     * Adds a student to this team with a specific role.
+     * This method also sets the project on the membership to enforce the unique constraint.
+     */
+    public void addStudent(Student student, TeamRole role) {
+        TeamMember membership = new TeamMember();
+        membership.setTeam(this);
+        membership.setStudent(student);
+        membership.setTeamRole(role);
+        membership.setProject(this.getProject());
+        
+        this.members.add(membership);
+        student.getTeamMemberships().add(membership);
     }
 
-    /** 
-    * Removes a student from the team.
-    * @param student The student to remove
-    */
+    /** Removes a student from this team. */
     public void removeStudent(Student student) {
-        this.members.remove(student);
-        student.getTeams().remove(this);
+        this.members.removeIf(membership -> membership.getStudent().equals(student));
+        student.getTeamMemberships().removeIf(membership -> membership.getTeam().equals(this));
     }
 
     /**
