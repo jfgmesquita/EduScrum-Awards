@@ -4,14 +4,18 @@ import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
+import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.User;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Team;
+import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
+import com.group7.eduscrum_awards.repository.TeamMemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,7 +27,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -48,14 +51,20 @@ class TeamServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private TeamMemberRepository teamMemberRepository;
+
     @InjectMocks
     private TeamServiceImpl teamService;
+
 
     private Project existingProject;
     private TeamCreateDTO createDTO;
     private Team savedTeam;
     private Student existingStudent;
     private User adminUser;
+    private TeamMemberCreateDTO createMemberDTO;
+    private TeamMember existingMembership;
 
     @BeforeEach
     void setUp() {
@@ -82,6 +91,17 @@ class TeamServiceImplTest {
 
         adminUser = new User("Test Admin", "admin@test.com", "pass", Role.ADMIN);
         adminUser.setId(5L);
+
+        // Data for addMemberToTeam tests
+        createMemberDTO = new TeamMemberCreateDTO();
+        createMemberDTO.setStudentId(4L);
+        createMemberDTO.setTeamRole(TeamRole.DEVELOPER);
+        
+        existingMembership = new TeamMember();
+        existingMembership.setId(100L);
+        existingMembership.setStudent(existingStudent);
+        existingMembership.setProject(existingProject);
+        existingMembership.setTeam(savedTeam);
     }
 
     // Tests for createTeam method
@@ -172,72 +192,72 @@ class TeamServiceImplTest {
     // Test for addStudentToTeam
 
     @Test
-    @DisplayName("addStudentToTeam | Should add student successfully")
-    void testAddStudentToTeam_Success() {
+    @DisplayName("addMemberToTeam | Should add member successfully")
+    void testAddMemberToTeam_Success() {
         when(teamRepository.findById(10L)).thenReturn(Optional.of(savedTeam));
         when(userRepository.findById(4L)).thenReturn(Optional.of(existingStudent));
+        when(teamMemberRepository.findByStudentAndProject(existingStudent, existingProject)).thenReturn(Optional.empty());
 
-        TeamDTO result = teamService.addStudentToTeam(10L, 4L);
+        TeamDTO result = teamService.addMemberToTeam(10L, createMemberDTO);
 
         assertNotNull(result);
-        assertTrue(savedTeam.getMembers().contains(existingStudent));
-        
+        assertEquals(10L, result.getId());
         verify(teamRepository, times(1)).findById(10L);
         verify(userRepository, times(1)).findById(4L);
-        verify(teamRepository, times(1)).save(savedTeam);
+        verify(teamMemberRepository, times(1)).findByStudentAndProject(existingStudent, existingProject);
+        verify(teamMemberRepository, times(1)).save(any(TeamMember.class));
+        verify(teamRepository, never()).save(any(Team.class));
     }
 
     @Test
-    @DisplayName("addStudentToTeam | Should throw ResourceNotFoundException when Team not found")
-    void testAddStudentToTeam_Failure_TeamNotFound() {
+    @DisplayName("addMemberToTeam | Should throw ResourceNotFoundException when Team not found")
+    void testAddMemberToTeam_Failure_TeamNotFound() {
         when(teamRepository.findById(10L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            teamService.addStudentToTeam(10L, 4L);
+            teamService.addMemberToTeam(10L, createMemberDTO);
         });
 
         verify(userRepository, never()).findById(anyLong());
+        verify(teamMemberRepository, never()).findByStudentAndProject(any(), any());
         verify(teamRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("addStudentToTeam | Should throw ResourceNotFoundException when Student not found")
-    void testAddStudentToTeam_Failure_StudentNotFound() {
+    @DisplayName("addMemberToTeam | Should throw ResourceNotFoundException when Student not found")
+    void testAddMemberToTeam_Failure_StudentNotFound() {
         when(teamRepository.findById(10L)).thenReturn(Optional.of(savedTeam));
         when(userRepository.findById(4L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            teamService.addStudentToTeam(10L, 4L);
+            teamService.addMemberToTeam(10L, createMemberDTO);
         });
 
+        verify(teamMemberRepository, never()).findByStudentAndProject(any(), any());
         verify(teamRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("addStudentToTeam | Should throw ResourceNotFoundException when User is not a Student")
-    void testAddStudentToTeam_Failure_UserIsNotStudent() {
+    @DisplayName("addMemberToTeam | Should throw ResourceNotFoundException when User is not Student")
+    void testAddMemberToTeam_Failure_UserIsNotStudent() {
         when(teamRepository.findById(10L)).thenReturn(Optional.of(savedTeam));
-        when(userRepository.findById(5L)).thenReturn(Optional.of(adminUser)); // Find an Admin
+        when(userRepository.findById(4L)).thenReturn(Optional.of(adminUser)); // Return admin
 
-        ResourceNotFoundException exception = assertThrows(
-            ResourceNotFoundException.class,
-            () -> teamService.addStudentToTeam(10L, 5L)
-        );
-
-        assertEquals("Student not found with id: 5", exception.getMessage());
-        verify(teamRepository, never()).save(any());
+        createMemberDTO.setStudentId(4L);
+        assertThrows(ResourceNotFoundException.class, () -> {
+            teamService.addMemberToTeam(10L, createMemberDTO);
+        });
     }
 
     @Test
-    @DisplayName("addStudentToTeam | Should throw DuplicateResourceException when Student already in Team")
-    void testAddStudentToTeam_Failure_AlreadyInTeam() {
-
-        savedTeam.getMembers().add(existingStudent);
+    @DisplayName("addMemberToTeam | Should throw DuplicateResourceException when Student already in Project")
+    void testAddMemberToTeam_Failure_StudentAlreadyInProject() {
         when(teamRepository.findById(10L)).thenReturn(Optional.of(savedTeam));
         when(userRepository.findById(4L)).thenReturn(Optional.of(existingStudent));
+        when(teamMemberRepository.findByStudentAndProject(existingStudent, existingProject)).thenReturn(Optional.of(existingMembership));
 
         assertThrows(DuplicateResourceException.class, () -> {
-            teamService.addStudentToTeam(10L, 4L);
+            teamService.addMemberToTeam(10L, createMemberDTO);
         });
 
         verify(teamRepository, never()).save(any());
