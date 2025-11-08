@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -37,6 +38,8 @@ public class SecurityConfig {
         http
             // Temporarily disable CSRF for our API endpoints (common for stateless APIs)
             .csrf(csrf -> csrf.disable()) 
+            // Set session management to stateless (no sessions)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             
             .authorizeHttpRequests(authz -> authz
             
@@ -46,15 +49,15 @@ public class SecurityConfig {
                 // Lock down the Degree endpoints to ADMINS only
                 .requestMatchers("/api/v1/degrees/**").hasRole(Role.ADMIN.name())
                 
-                // Lock down the Course endpoints to ADMINS only
+                // Lock down the Course creation endpoint to TEACHERS only
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
                 .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name())
                 
                 // Lock down the Project Teams creation endpoint to TEACHERS only
                 .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/teams").hasRole(Role.TEACHER.name())
                 
-                // Lock down the Team Student assignment endpoint to TEACHERS only
-                .requestMatchers(HttpMethod.POST, "/api/v1/teams/{teamId}/students/{studentId}").hasRole(Role.TEACHER.name())
+                // Lock down the Team Member assignment endpoint to TEACHERS only
+                .requestMatchers(HttpMethod.POST, "/api/v1/teams/{teamId}/members").hasRole(Role.TEACHER.name())
                 
                 // Secure everything else
                 .anyRequest().authenticated()
