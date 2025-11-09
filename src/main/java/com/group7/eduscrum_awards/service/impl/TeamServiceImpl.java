@@ -18,6 +18,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Implementation of the TeamService.
+ * Handles the logic for creating teams and adding members.
+ */
 @Service
 public class TeamServiceImpl implements TeamService {
 
