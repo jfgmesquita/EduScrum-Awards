@@ -79,7 +79,7 @@ public class TaskServiceImpl implements TaskService {
         // Save the new task
         Task savedTask = taskRepository.save(newTask);
 
-        // 7. Return the DTO
+        // Return the DTO
         return new TaskDTO(savedTask);
     }
 
