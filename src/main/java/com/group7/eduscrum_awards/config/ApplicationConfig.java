@@ -57,7 +57,7 @@ public class ApplicationConfig {
 
     /**
      * Defines the AuthenticationManager bean.
-     * This is the main interface for authenticating a user and will be inject this into the AuthService.
+     * This is the main interface for authenticating a user and will be injected into the AuthService.
      *
      * @param config The authentication configuration.
      * @return The AuthenticationManager.
