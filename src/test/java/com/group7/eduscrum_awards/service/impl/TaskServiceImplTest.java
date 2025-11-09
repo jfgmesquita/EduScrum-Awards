@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.TaskCreateDTO;
 import com.group7.eduscrum_awards.dto.TaskDTO;
+import com.group7.eduscrum_awards.dto.TaskAssignDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.*;
 import com.group7.eduscrum_awards.model.enums.Role;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 /**
@@ -55,7 +57,9 @@ class TaskServiceImplTest {
     private Student poStudent;
     private Student devStudent;
     private TeamMember poMembership;
+    private TeamMember devMembership;
     private TaskCreateDTO createDTO;
+    private TaskAssignDTO assignDTO;
     private Task savedTask;
 
     @BeforeEach
@@ -82,9 +86,20 @@ class TaskServiceImplTest {
         poMembership.setProject(existingProject);
         poMembership.setTeamRole(TeamRole.PRODUCT_OWNER);
 
+        // Developer Membership
+        devMembership = new TeamMember();
+        devMembership.setId(2L);
+        devMembership.setStudent(devStudent);
+        devMembership.setProject(existingProject);
+        devMembership.setTeamRole(TeamRole.DEVELOPER);
+
         // Task Creation DTO
         createDTO = new TaskCreateDTO();
         createDTO.setDescription("New test task");
+
+        // Task Assignment DTO
+        assignDTO = new TaskAssignDTO();
+        assignDTO.setTeamMemberId(2L);
 
         // Saved Task Mock
         savedTask = new Task("New test task", existingSprint);
@@ -102,6 +117,8 @@ class TaskServiceImplTest {
     void tearDown() {
         SecurityContextHolder.clearContext();
     }
+
+    // Tests for createTask
 
     @Test
     @DisplayName("createTask | Should create task successfully for Product Owner")
@@ -156,6 +173,117 @@ class TaskServiceImplTest {
         
         verify(sprintRepository).findById(10L);
         verify(teamMemberRepository).findByStudentAndProject(devStudent, existingProject);
+        verify(taskRepository, never()).save(any());
+    }
+
+    // Tests for assignTask
+
+    @Test
+    @DisplayName("assignTask | Should assign task successfully for Product Owner")
+    void testAssignTask_Success() {
+        mockSecurityContext(poStudent);
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findById(2L)).thenReturn(Optional.of(devMembership));
+        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject)).thenReturn(Optional.of(poMembership));
+        doReturn(savedTask).when(taskRepository).save(any(Task.class));
+
+        TaskDTO result = taskService.assignTask(100L, assignDTO);
+
+        assertNotNull(result);
+        assertEquals(100L, result.getId());
+        assertEquals(2L, result.getTeamMemberId()); // Check assignment
+        
+        verify(taskRepository).findById(100L);
+        verify(teamMemberRepository).findById(2L);
+        verify(teamMemberRepository).findByStudentAndProject(poStudent, existingProject);
+        verify(taskRepository).save(any(Task.class));
+    }
+
+    @Test
+    @DisplayName("assignTask | Should throw ResourceNotFoundException when Task not found")
+    void testAssignTask_Failure_TaskNotFound() {
+        mockSecurityContext(poStudent);
+        
+        when(taskRepository.findById(100L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            taskService.assignTask(100L, assignDTO);
+        });
+
+        verify(teamMemberRepository, never()).findById(anyLong());
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("assignTask | Should throw ResourceNotFoundException when Developer not found")
+    void testAssignTask_Failure_DeveloperNotFound() {
+        mockSecurityContext(poStudent);
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findById(2L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> {
+            taskService.assignTask(100L, assignDTO);
+        });
+
+        verify(taskRepository).findById(100L);
+        verify(teamMemberRepository).findById(2L);
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("assignTask | Should throw AccessDeniedException when user is not Product Owner")
+    void testAssignTask_Failure_NotProductOwner() {
+        mockSecurityContext(devStudent); // Log in as Developer
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findById(2L)).thenReturn(Optional.of(devMembership));
+        when(teamMemberRepository.findByStudentAndProject(devStudent, existingProject)).thenReturn(Optional.empty()); // Not the PO
+
+        assertThrows(AccessDeniedException.class, () -> {
+            taskService.assignTask(100L, assignDTO);
+        });
+        
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("assignTask | Should throw IllegalArgumentException when Developer is not a DEVELOPER")
+    void testAssignTask_Failure_MemberNotDeveloper() {
+        mockSecurityContext(poStudent);
+        poMembership.setTeamRole(TeamRole.PRODUCT_OWNER); // Change target to be a PO
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findById(1L)).thenReturn(Optional.of(poMembership)); // Try to assign to the PO
+        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject)).thenReturn(Optional.of(poMembership));
+
+        assignDTO.setTeamMemberId(1L); // Set DTO to assign to PO
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            taskService.assignTask(100L, assignDTO);
+        });
+
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("assignTask | Should throw IllegalArgumentException when Developer is on different project")
+    void testAssignTask_Failure_DeveloperWrongProject() {
+        mockSecurityContext(poStudent);
+        
+        Project otherProject = new Project();
+        otherProject.setId(2L);
+        devMembership.setProject(otherProject); // Put the dev on a different project
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findById(2L)).thenReturn(Optional.of(devMembership));
+        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject)).thenReturn(Optional.of(poMembership));
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            taskService.assignTask(100L, assignDTO);
+        });
+
         verify(taskRepository, never()).save(any());
     }
 }
