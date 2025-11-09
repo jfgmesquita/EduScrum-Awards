@@ -27,34 +27,26 @@ public class JwtServiceImpl implements JwtService {
     // Token validity duration (e.g., 24 hours)
     private static final long TOKEN_VALIDITY = 1000 * 60 * 60 * 24;
 
-    /**
-     * Extracts the username (email) from the JWT.
-     */
+    /** Extracts the username (email) from the JWT. */
     @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    /**
-     * Extracts a specific claim from the JWT.
-     */
+    /** Extracts a specific claim from the JWT. */
     @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
-    /**
-     * Generates a new JWT for a user.
-     */
+    /** Generates a new JWT for a user. */
     @Override
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
-    /**
-     * Generates a new JWT with extra claims.
-     */
+    /** Generates a new JWT with extra claims. */
     @Override
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
@@ -66,33 +58,25 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
-    /**
-     * Checks if a token is valid (i.e., not expired and signed by us).
-     */
+    /** Checks if a token is valid (i.e., not expired and signed by us). */
     @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    /**
-     * Checks if a token has expired.
-     */
+    /** Checks if a token has expired. */
     @Override
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    /**
-     * Extracts the expiration date from the JWT.
-     */
+    /** Extracts the expiration date from the JWT. */
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    /*
-     * Extracts all claims from the JWT.
-     */
+    /** Extracts all claims from the JWT. */
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey()) // Verify the signature
