@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.Set;
+import java.util.HashSet;
 
 /** 
  * Association Entity linking a Student to a Team with a specific role.
@@ -45,6 +47,31 @@ public class TeamMember {
     @Enumerated(EnumType.STRING)
     @Column(name = "team_role", nullable = false)
     private TeamRole teamRole;
+
+    /**
+     * The set of tasks assigned to this team member.
+     * This is the "One" side of the One-to-Many relationship.
+     */
+    @OneToMany(mappedBy = "teamMember", fetch = FetchType.LAZY)
+    private Set<Task> tasks = new HashSet<>();
+
+    /**
+     * Assign a task to this team member.
+     * @param task
+     */
+    public void assignTask(Task task) {
+        this.tasks.add(task);
+        task.setTeamMember(this);
+    }
+
+    /**
+     * Unassign a task from this team member.
+     * @param task
+     */
+    public void unassignTask(Task task) {
+        this.tasks.remove(task);
+        task.setTeamMember(null);
+    }
 
     /**
      * Equality is based on the identifier when it is set.
