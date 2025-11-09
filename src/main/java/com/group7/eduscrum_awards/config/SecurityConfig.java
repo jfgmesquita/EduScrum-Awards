@@ -51,6 +51,7 @@ public class SecurityConfig {
                 // STUDENT-ONLY ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/sprints").hasRole(Role.STUDENT.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/sprints/{sprintId}/tasks").hasRole(Role.STUDENT.name())
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/tasks/{taskId}/assign").hasRole(Role.STUDENT.name())
                 
                 // --- SECURE EVERYTHING ELSE ---
                 .anyRequest().authenticated()
