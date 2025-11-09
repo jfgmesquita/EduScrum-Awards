@@ -47,6 +47,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/teams").hasRole(Role.TEACHER.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/teams/{teamId}/members").hasRole(Role.TEACHER.name())
+
+                // STUDENT-ONLY ENDPOINTS
+                .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/sprints").hasRole(Role.STUDENT.name())
                 
                 // --- SECURE EVERYTHING ELSE ---
                 .anyRequest().authenticated()
