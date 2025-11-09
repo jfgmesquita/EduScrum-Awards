@@ -13,6 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Implementation of the ProjectService.
+ * Handles the logic for creating projects.
+ */
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
