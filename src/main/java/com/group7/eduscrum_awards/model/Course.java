@@ -73,7 +73,13 @@ public class Course {
         project.setCourse(null);
     }
 
-    /** Equality is based on the identifier. */
+    /**
+     * Equality is based on the identifier when it is set.
+     * Two transient instances (with null id) are considered different.
+     *
+     * @param o object to compare
+     * @return true if both objects are the same or have the same non-null id
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,7 +88,7 @@ public class Course {
         return id != null && id.equals(course.id);
     }
 
-    /** Uses the class hash. */
+    /** Uses the class hash when id is null to avoid collisions for transient instances. */
     @Override
     public int hashCode() {
         return getClass().hashCode();
