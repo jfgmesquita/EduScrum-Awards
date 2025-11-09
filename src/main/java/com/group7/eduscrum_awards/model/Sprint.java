@@ -4,10 +4,9 @@ import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDate;
-// import java.util.Set; // Will be used for Tasks
-// import java.util.HashSet;
+import java.util.Set;
+import java.util.HashSet;
 
 /** Represents a Sprint within a Project. */
 @NoArgsConstructor
@@ -39,9 +38,12 @@ public class Sprint {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
     
-    // This is for the next requirement ("list of tasks")
-    // @OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private Set<Task> tasks = new HashSet<>();
+    /**
+     * The set of tasks within this sprint.
+     * This is the "One" side of the One-to-Many relationship.
+     */
+    @OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Task> tasks = new HashSet<>();
 
     /**
     * Convenience constructor.
@@ -57,6 +59,24 @@ public class Sprint {
         this.startDate = startDate;
         this.endDate = endDate;
         this.project = project;
+    }
+
+    /**
+     * Adds a task to this sprint and sets the sprint reference in the task.
+     * @param task
+     */
+    public void addTask(Task task) {
+        this.tasks.add(task);
+        task.setSprint(this);
+    }
+
+    /**
+     * Removes a task from this sprint and clears the sprint reference in the task.
+     * @param task
+     */
+    public void removeTask(Task task) {
+        this.tasks.remove(task);
+        task.setSprint(null);
     }
 
     /**
