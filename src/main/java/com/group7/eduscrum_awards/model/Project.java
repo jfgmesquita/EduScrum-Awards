@@ -50,6 +50,13 @@ public class Project {
     private Set<Team> teams = new HashSet<>();
 
     /**
+     * The set of sprints within this project.
+     * This is the "One" side of the One-to-Many relationship.
+     */
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Sprint> sprints = new HashSet<>();
+
+    /**
      * Convenience constructor.
      * @param name The project name.
      * @param description The project description.
@@ -79,6 +86,24 @@ public class Project {
     public void removeTeam(Team team) {
         this.teams.remove(team);
         team.setProject(null);
+    }
+
+    /**
+     * Adds a sprint to this project.
+     * @param sprint
+     */
+    public void addSprint(Sprint sprint) {
+        this.sprints.add(sprint);
+        sprint.setProject(this);
+    }
+
+    /**
+     * Removes a sprint from this project.
+     * @param sprint
+     */
+    public void removeSprint(Sprint sprint) {
+        this.sprints.remove(sprint);
+        sprint.setProject(null);
     }
 
     /**
