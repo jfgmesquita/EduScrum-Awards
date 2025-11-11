@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service;
 
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
@@ -24,13 +25,12 @@ public interface TeamService {
     TeamDTO createTeam(Long projectId, TeamCreateDTO teamCreateDTO);
 
     /**
-     * Assigns an existing Student to an existing Team.
+     * Adds a student to a team with a specific role.
+     * Enforces the rule that a student can only be on one team per project.
      *
      * @param teamId The ID of the Team.
-     * @param studentId The ID of the Student to assign.
+     * @param createDTO The DTO containing the studentId and their role.
      * @return A DTO of the updated Team.
-     * @throws ResourceNotFoundException if either ID is not found or user is not a Student.
-     * @throws DuplicateResourceException if the student is already in this team.
      */
-    TeamDTO addStudentToTeam(Long teamId, Long studentId);
+    TeamDTO addMemberToTeam(Long teamId, TeamMemberCreateDTO createDTO);
 }

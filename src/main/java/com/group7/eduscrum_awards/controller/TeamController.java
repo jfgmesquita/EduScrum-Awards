@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.controller;
 
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
 import com.group7.eduscrum_awards.service.TeamService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,18 +44,19 @@ public class TeamController {
     }
 
     /**
-     * Endpoint to assign an existing Student to an existing Team.
+     * Endpoint to assign an existing Student to a Team with a specific role
      * This endpoint is intended to be called by a Teacher.
-     * Accessible via: POST http://localhost:8080/api/v1/teams/{teamId}/students/{studentId}
+     * Accessible via: POST http://localhost:8080/api/v1/teams/{teamId}/members
      *
      * @param teamId The ID of the Team.
-     * @param studentId The ID of the Student to be assigned.
+     * @param createDTO The JSON body containing the studentId and teamRole.
      * @return A ResponseEntity containing the updated TeamDTO and HTTP status 200.
      */
-    @PostMapping("/teams/{teamId}/students/{studentId}")
-    public ResponseEntity<TeamDTO> addStudentToTeam(@PathVariable Long teamId, @PathVariable Long studentId) {
+    @PostMapping("/teams/{teamId}/members")
+    public ResponseEntity<TeamDTO> addMemberToTeam(@PathVariable Long teamId,
+            @Valid @RequestBody TeamMemberCreateDTO createDTO) {
         
-        TeamDTO updatedTeam = teamService.addStudentToTeam(teamId, studentId);
+        TeamDTO updatedTeam = teamService.addMemberToTeam(teamId, createDTO);
         // Return the updated team and a 200 OK status
         return new ResponseEntity<>(updatedTeam, HttpStatus.OK);
     }
