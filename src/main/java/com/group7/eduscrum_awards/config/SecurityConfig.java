@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/teachers").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/degrees/**").hasRole(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.POST, "/api/v1/courses/**").hasRole(Role.ADMIN.name())
+                .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name())
 
                 // TEACHER-ONLY ENDPOINTS (Most specific rules go first)
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
