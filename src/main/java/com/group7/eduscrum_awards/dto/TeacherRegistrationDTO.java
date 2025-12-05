@@ -15,15 +15,16 @@ import lombok.Setter;
 public class TeacherRegistrationDTO {
 
     @NotBlank(message = "Name cannot be blank.")
-    @Size(min = 3, max = 100)
+    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters.")
     private String name;
 
     @NotBlank(message = "Email cannot be blank.")
     @Email(message = "Email should be valid.")
+    @Size(max = 100, message = "Email must be less than 100 characters.")
     private String email;
 
     @NotBlank(message = "Password cannot be blank.")
-    @Size(min = 8)
+    @Size(min = 8, message = "Password must be at least 8 characters long.")
     private String password;
 
     // Este campo é opcional (pode vir null se o frontend não selecionar nada)
