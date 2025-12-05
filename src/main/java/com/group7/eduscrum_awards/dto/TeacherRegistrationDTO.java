@@ -27,6 +27,6 @@ public class TeacherRegistrationDTO {
     @Size(min = 8, message = "Password must be at least 8 characters long.")
     private String password;
 
-    // Este campo é opcional (pode vir null se o frontend não selecionar nada)
+    // This field is optional (can be null if the frontend does not select anything)
     private Long courseIdToAssign; 
 }
