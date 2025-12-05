@@ -37,13 +37,7 @@ public class SecurityConfig {
                 // PUBLIC ENDPOINTS - Allow login and registration
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // Login & auth endpoints
 
-                // ADMIN-ONLY ENDPOINTS
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.POST, "/api/v1/users/teachers").hasRole(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.POST, "/api/v1/degrees/**").hasRole(Role.ADMIN.name())
-                .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name())
-
-                // TEACHER-ONLY ENDPOINTS (Most specific rules go first)
+                // TEACHER-ONLY ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/teams").hasRole(Role.TEACHER.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/teams/{teamId}/members").hasRole(Role.TEACHER.name())
@@ -52,8 +46,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/projects/{projectId}/sprints").hasRole(Role.STUDENT.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/sprints/{sprintId}/tasks").hasRole(Role.STUDENT.name())
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/tasks/{taskId}/assign").hasRole(Role.STUDENT.name())
+
+                // ADMIN-ONLY ENDPOINTS
+                .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST, "/api/v1/degrees/**").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST, "/api/v1/courses/**").hasRole(Role.ADMIN.name())
                 
-                // --- SECURE EVERYTHING ELSE ---
+                // SECURE EVERYTHING ELSE
                 .anyRequest().authenticated()
             )
             
