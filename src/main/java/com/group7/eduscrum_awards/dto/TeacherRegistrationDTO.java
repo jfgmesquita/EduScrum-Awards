@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,5 +29,6 @@ public class TeacherRegistrationDTO {
     private String password;
 
     // This field is optional (can be null if the frontend does not select anything)
+    @Positive(message = "Course ID must be a positive number.")
     private Long courseIdToAssign; 
 }
