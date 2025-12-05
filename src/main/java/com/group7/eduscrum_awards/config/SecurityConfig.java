@@ -34,14 +34,14 @@ public class SecurityConfig {
             
             .authorizeHttpRequests(authz -> authz
                 
-                // PUBLIC ENDPOINTS
-                // Allow login and registration
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                // PUBLIC ENDPOINTS - Allow login and registration
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // Login & auth endpoints
 
                 // ADMIN-ONLY ENDPOINTS
-                .requestMatchers("/api/v1/degrees/**").hasRole(Role.ADMIN.name())
-                .requestMatchers("/api/v1/courses/**").hasRole(Role.ADMIN.name()) // Admin can manage all courses
+                .requestMatchers(HttpMethod.POST, "/api/v1/users").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST, "/api/v1/users/teachers").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST, "/api/v1/degrees/**").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST, "/api/v1/courses/**").hasRole(Role.ADMIN.name())
 
                 // TEACHER-ONLY ENDPOINTS (Most specific rules go first)
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
