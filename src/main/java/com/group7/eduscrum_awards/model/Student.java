@@ -44,6 +44,10 @@ public class Student extends User {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamMember> teamMemberships = new HashSet<>();
 
+    /** History of awards received by this student. */
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<AwardAssignment> awardAssignments = new HashSet<>();
+
     /**
      * Convenience constructor to create a new Student.
      * Automatically sets the Role to STUDENT.
