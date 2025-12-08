@@ -54,6 +54,13 @@ public class Course {
     private Set<Project> projects = new HashSet<>();
 
     /**
+     * Custom awards defined for this course.
+     * This is the "One" side of the One-to-Many relationship.
+     */
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Award> awards = new HashSet<>();
+
+    /**
      * Convenience constructor to create a Course with a name.
      * @param name The name of the course.
      */
@@ -71,6 +78,18 @@ public class Course {
     public void removeProject(Project project) {
         this.projects.remove(project);
         project.setCourse(null);
+    }
+
+    /** Helper method to add an award to this course. */
+    public void addAward(Award award) {
+        this.awards.add(award);
+        award.setCourse(this);
+    }
+
+    /** Helper method to remove an award from this course. */
+    public void removeAward(Award award) {
+        this.awards.remove(award);
+        award.setCourse(null);
     }
 
     /**
