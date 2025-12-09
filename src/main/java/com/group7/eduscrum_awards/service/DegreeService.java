@@ -1,8 +1,11 @@
 package com.group7.eduscrum_awards.service;
 
+import java.util.List;
+
 import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
 /**
  * Service Interface (Contract) that provide the business logic for creating
@@ -34,4 +37,11 @@ public interface DegreeService {
      * @throws DuplicateResourceException if the student is already assigned to this degree.
      */
     DegreeDTO addStudentToDegree(Long degreeId, Long studentId);
+
+    /**
+     * Retrieves all degrees in the system.
+     *
+     * @return A list of {@link DegreeDTO} representing all degrees.
+     */
+    List<DegreeDTO> getAllDegrees();
 }

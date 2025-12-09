@@ -18,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -203,5 +205,21 @@ class DegreeServiceImplTest {
         });
         
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("getAllDegrees | Should return all degrees mapped to DTOs")
+    void testGetAllDegrees_Success() {
+
+        List<Degree> degreeList = Arrays.asList(existingDegree, otherDegree);
+        when(degreeRepository.findAll()).thenReturn(degreeList);
+
+        List<DegreeDTO> result = degreeService.getAllDegrees();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(existingDegree.getName(), result.get(0).getName()); // Validates mapping
+        
+        verify(degreeRepository, times(1)).findAll();
     }
 }
