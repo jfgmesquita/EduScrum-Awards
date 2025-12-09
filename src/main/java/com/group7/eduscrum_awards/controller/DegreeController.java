@@ -66,7 +66,7 @@ public class DegreeController {
     }
 
     /**
-     * Engpoint to retrieve all Degrees.
+     * Endpoint to retrieve all Degrees.
      * Accessible via: GET http://localhost:8080/api/v1/degrees
      * 
      * @return A ResponseEntity containing the list of DegreeDTOs and HTTP status 200.
