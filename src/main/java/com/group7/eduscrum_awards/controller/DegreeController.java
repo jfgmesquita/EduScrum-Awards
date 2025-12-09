@@ -4,6 +4,9 @@ import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
 import com.group7.eduscrum_awards.service.DegreeService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
@@ -59,5 +63,16 @@ public class DegreeController {
         DegreeDTO updatedDegree = degreeService.addStudentToDegree(degreeId, studentId);
         // We return HttpStatus.OK (200) which indicates the request was successful.
         return new ResponseEntity<>(updatedDegree, HttpStatus.OK);
+    }
+
+    /**
+     * Engpoint to retrieve all Degrees.
+     * Accessible via: GET http://localhost:8080/api/v1/degrees
+     * 
+     * @return A ResponseEntity containing the list of DegreeDTOs and HTTP status 200.
+     */
+    @GetMapping
+    public ResponseEntity<List<DegreeDTO>> getAllDegrees() {
+        return ResponseEntity.ok(degreeService.getAllDegrees());
     }
 }
