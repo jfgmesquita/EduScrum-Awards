@@ -9,6 +9,10 @@ import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.DegreeService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,5 +106,16 @@ public class DegreeServiceImpl implements DegreeService {
 
         // Return the Degree DTO
         return new DegreeDTO(degree);
+    }
+
+    /**
+     * Retrieves all degrees in the system.
+     * 
+     * @return A list of {@link DegreeDTO} representing all degrees.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<DegreeDTO> getAllDegrees() {
+        return degreeRepository.findAll().stream().map(DegreeDTO::new).collect(Collectors.toList());
     }
 }
