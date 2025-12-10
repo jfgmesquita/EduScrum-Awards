@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
+import com.group7.eduscrum_awards.dto.DegreeDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
@@ -20,6 +21,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -54,6 +58,7 @@ class CourseServiceImplTest {
     private Degree existingDegree;
     private CourseCreateDTO createDTO;
     private Course existingCourse;
+    private Course otherCourse;
     private Teacher existingTeacher;
     private Student existingStudent;
     private User adminUser;
@@ -257,5 +262,21 @@ class CourseServiceImplTest {
         });
 
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("getAllCourses | Should return all courses mapped to DTOs")
+    void testGetAllCourses_Success() {
+
+        List<Course> courseList = Arrays.asList(existingCourse, otherCourse);
+        when(courseRepository.findAll()).thenReturn(courseList);
+
+        List<CourseDTO> result = courseService.getAllCourses();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(existingCourse.getName(), result.get(0).getName()); // Validates mapping
+        
+        verify(courseRepository, times(1)).findAll();
     }
 }
