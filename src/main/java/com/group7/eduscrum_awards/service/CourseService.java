@@ -1,5 +1,7 @@
 package com.group7.eduscrum_awards.service;
 
+import java.util.List;
+
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -44,7 +46,14 @@ public interface CourseService {
      */
     CourseDTO addStudentToCourse(Long courseId, Long studentId);
 
+
+    /**
+     * Retrieves all courses in the system.
+     *
+     * @return A list of {@link CourseDTO} representing all courses.
+     */
+    List<CourseDTO> getAllCourses();
+
     // Future methods can be added here, e.g.:
-    // List<CourseDTO> getAllCourses();
     // CourseDTO addTeacherToCourse(Long courseId, Long teacherId);
 }

@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
+import com.group7.eduscrum_awards.dto.DegreeDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
@@ -12,6 +13,10 @@ import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.CourseService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -119,5 +124,16 @@ public class CourseServiceImpl implements CourseService {
 
         // Return the Course DTO
         return new CourseDTO(course);
+    }
+
+    /**
+     * Retrieves all courses in the system.
+     * 
+     * @return A list of {@link CourseDTO} representing all courses.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseDTO> getAllCourses() {
+        return courseRepository.findAll().stream().map(CourseDTO::new).collect(Collectors.toList());
     }
 }
