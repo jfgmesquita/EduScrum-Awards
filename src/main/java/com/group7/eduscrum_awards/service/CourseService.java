@@ -53,7 +53,4 @@ public interface CourseService {
      * @return A list of {@link CourseDTO} representing all courses.
      */
     List<CourseDTO> getAllCourses();
-
-    // Future methods can be added here, e.g.:
-    // CourseDTO addTeacherToCourse(Long courseId, Long teacherId);
 }
