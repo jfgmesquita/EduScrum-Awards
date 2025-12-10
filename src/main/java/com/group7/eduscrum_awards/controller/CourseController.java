@@ -4,6 +4,9 @@ import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
 import com.group7.eduscrum_awards.service.CourseService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
@@ -70,5 +74,16 @@ public class CourseController {
         CourseDTO updatedCourse = courseService.addStudentToCourse(courseId, studentId);
         // Return 200 OK with the updated course
         return new ResponseEntity<>(updatedCourse, HttpStatus.OK);
+    }
+
+    /**
+     * Engpoint to retrieve all Courses.
+     * Accessible via: GET http://localhost:8080/api/v1/courses
+     * 
+     * @return A ResponseEntity containing the list of CourseDTOS and HTTP status 200.
+     */
+    @GetMapping("/courses")
+    public ResponseEntity<List<CourseDTO>> getAllCourses() {
+        return ResponseEntity.ok(courseService.getAllCourses());
     }
 }
