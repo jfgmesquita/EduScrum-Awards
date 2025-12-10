@@ -2,7 +2,6 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
-import com.group7.eduscrum_awards.dto.DegreeDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
