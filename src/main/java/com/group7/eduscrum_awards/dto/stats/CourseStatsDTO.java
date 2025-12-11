@@ -11,4 +11,5 @@ import lombok.Setter;
 public class CourseStatsDTO {
     private long studentsCount;
     private long teachersCount;
+    private String degreeName;
 }
