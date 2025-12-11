@@ -41,6 +41,7 @@ class StatsControllerTest {
     @Test
     @WithMockUser
     void getGlobalStats_ShouldReturnData() throws Exception {
+
         when(statsService.getGlobalStats()).thenReturn(new GlobalStatsDTO(1, 2, 3, 4));
 
         mockMvc.perform(get("/api/v1/stats/global"))
@@ -52,10 +53,36 @@ class StatsControllerTest {
     @Test
     @WithMockUser
     void getDegreeStats_ShouldReturnData() throws Exception {
+
         when(statsService.getDegreeStats(1L)).thenReturn(new DegreeStatsDTO(5, 10, 2));
 
         mockMvc.perform(get("/api/v1/stats/degrees/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.coursesCount").value(5));
+    }
+
+    @Test
+    @WithMockUser
+    void getCourseStats_ShouldReturnData() throws Exception {
+
+        Long courseId = 10L;
+        when(statsService.getCourseStats(courseId)).thenReturn(new CourseStatsDTO(30, 2));
+
+        mockMvc.perform(get("/api/v1/stats/courses/" + courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentsCount").value(30))
+                .andExpect(jsonPath("$.teachersCount").value(2));
+    }
+
+    @Test
+    @WithMockUser
+    void getTeacherStats_ShouldReturnData() throws Exception {
+
+        Long teacherId = 5L;
+        when(statsService.getTeacherStats(teacherId)).thenReturn(new TeacherStatsDTO(4));
+
+        mockMvc.perform(get("/api/v1/stats/teachers/" + teacherId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.coursesCount").value(4));
     }
 }
