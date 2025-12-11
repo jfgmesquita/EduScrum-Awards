@@ -10,6 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Implementation of the {@link StatsService} interface.
+ * Provides methods to retrieve various statistics related to users, degrees, and courses.
+ */
 @Service
 @RequiredArgsConstructor
 public class StatsServiceImpl implements StatsService {
