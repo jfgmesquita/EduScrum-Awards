@@ -8,6 +8,11 @@ import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
 import com.group7.eduscrum_awards.repository.UserRepository;
+
+import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -184,5 +189,40 @@ class UserServiceImplTest {
         verify(userRepository, never()).findByEmail(anyString());
         verify(passwordEncoder, never()).encode(anyString());
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Should return list of all students")
+    void testGetAllStudents() {
+
+        Student student1 = new Student("S1", "s1@test.com", "pass");
+        Student student2 = new Student("S2", "s2@test.com", "pass");
+        List<User> mockStudents = Arrays.asList(student1, student2);
+
+        when(userRepository.findAllByRole(Role.STUDENT)).thenReturn(mockStudents);
+
+        List<UserDTO> result = userService.getAllStudents();
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("S1", result.get(0).getName());
+        verify(userRepository, times(1)).findAllByRole(Role.STUDENT);
+    }
+
+    @Test
+    @DisplayName("Should return list of all teachers")
+    void testGetAllTeachers() {
+
+        Teacher teacher1 = new Teacher("T1", "t1@test.com", "pass");
+        List<User> mockTeachers = Arrays.asList(teacher1);
+
+        when(userRepository.findAllByRole(Role.TEACHER)).thenReturn(mockTeachers);
+
+        List<UserDTO> result = userService.getAllTeachers();
+        
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("T1", result.get(0).getName());
+        verify(userRepository, times(1)).findAllByRole(Role.TEACHER);
     }
 }
