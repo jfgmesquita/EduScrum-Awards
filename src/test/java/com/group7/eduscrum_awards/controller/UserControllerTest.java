@@ -1,6 +1,7 @@
 package com.group7.eduscrum_awards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
 import com.group7.eduscrum_awards.dto.TeacherRegistrationDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
@@ -10,9 +11,14 @@ import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.CourseService;
 import com.group7.eduscrum_awards.service.JwtService;
 import com.group7.eduscrum_awards.service.UserService;
+
+import java.util.Arrays;
+import java.util.List;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -120,5 +127,47 @@ class UserControllerTest {
 
         verify(userService, times(1)).registerUser(any(UserCreateDTO.class));
         verify(courseService, times(1)).addTeacherToCourse(10L, 1L);
+    }
+
+    @Test
+    @DisplayName("Should list all students")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testGetAllStudents_Success() throws Exception {
+        
+        UserDTO student1 = new UserDTO();
+        student1.setName("Alice");
+        student1.setRole(Role.STUDENT);
+
+        List<UserDTO> students = Arrays.asList(student1);
+        when(userService.getAllStudents()).thenReturn(students);
+
+        mockMvc.perform(get("/api/v1/users/students")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Alice"));
+        
+        verify(userService, times(1)).getAllStudents();
+    }
+
+    @Test
+    @DisplayName("Should list all teachers")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testGetAllTeachers_Success() throws Exception {
+
+        UserDTO teacher1 = new UserDTO();
+        teacher1.setName("Professor X");
+        teacher1.setRole(Role.TEACHER);
+
+        List<UserDTO> teachers = Arrays.asList(teacher1);
+        when(userService.getAllTeachers()).thenReturn(teachers);
+
+        mockMvc.perform(get("/api/v1/users/teachers")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Professor X"));
+
+        verify(userService, times(1)).getAllTeachers();
     }
 }

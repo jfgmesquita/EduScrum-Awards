@@ -9,6 +9,10 @@ import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.UserService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -98,5 +102,31 @@ public class UserServiceImpl implements UserService {
 
         // Map Entity to Response DTO
         return new UserDTO(savedUser);
+    }
+
+    /**
+     * Retrieves all students in the system.
+     * 
+     * @return A list of UserDTOs representing all students.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAllStudents() {
+        return userRepository.findAllByRole(Role.STUDENT).stream()
+                .map(UserDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all teachers in the system.
+     * 
+     * @return A list of UserDTOs representing all teachers.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAllTeachers() {
+        return userRepository.findAllByRole(Role.TEACHER).stream()
+                .map(UserDTO::new)
+                .collect(Collectors.toList());
     }
 }

@@ -13,10 +13,19 @@ import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -24,14 +33,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for the CourseServiceImpl.
@@ -75,6 +76,10 @@ class CourseServiceImplTest {
         existingCourse = new Course("Test Course");
         existingCourse.setId(99L);
         existingCourse.setDegree(existingDegree);
+
+        otherCourse = new Course("Other Course");
+        otherCourse.setId(100L);
+        otherCourse.setDegree(existingDegree);
 
         // Data for addTeacherToCourse tests
         existingTeacher = new Teacher("Prof. Teste", "prof@teste.com", "hashedpass");
@@ -183,7 +188,6 @@ class CourseServiceImplTest {
         });
     }
 
-
     // Tests for addStudentToCourse
 
     @Test
@@ -262,6 +266,8 @@ class CourseServiceImplTest {
 
         verify(userRepository, never()).save(any());
     }
+
+    // Test for getAllCourses
 
     @Test
     @DisplayName("getAllCourses | Should return all courses mapped to DTOs")

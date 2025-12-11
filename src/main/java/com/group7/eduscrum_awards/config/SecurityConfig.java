@@ -59,6 +59,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/tasks/{taskId}/assign").hasRole(Role.STUDENT.name())
 
                 // ADMIN-ONLY ENDPOINTS
+                .requestMatchers(HttpMethod.GET, "/api/v1/users/students").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.GET, "/api/v1/users/teachers").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/**").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/degrees/**").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/**").hasRole(Role.ADMIN.name())

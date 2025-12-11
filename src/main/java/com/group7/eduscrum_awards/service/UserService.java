@@ -1,7 +1,10 @@
 package com.group7.eduscrum_awards.service;
 
+import java.util.List;
+
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 
 /**
  * Service Interface (Contract) for User operations.
@@ -19,8 +22,17 @@ public interface UserService {
      */
     UserDTO registerUser(UserCreateDTO userCreateDTO);
 
-    // Future methods:
-    // UserDTO loginUser(LoginDTO loginDTO);
-    // UserDTO getUserByEmail(String email);
-    // List<UserDTO> getAllUsers();
+    /**
+     * Retrieves all students in the system.
+     * 
+     * @return A list of UserDTOs representing all students.
+     */
+    List<UserDTO> getAllStudents();
+    
+    /**
+     * Retrieves all teachers in the system.
+     * 
+     * @return A list of UserDTOs representing all teachers.
+     */
+    List<UserDTO> getAllTeachers();
 }

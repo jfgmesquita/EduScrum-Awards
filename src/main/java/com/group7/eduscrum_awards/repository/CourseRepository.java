@@ -3,6 +3,8 @@ package com.group7.eduscrum_awards.repository;
 import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Degree;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
@@ -23,4 +25,39 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
      * @return an {@link Optional} containing the course if a match is found.
      */
     Optional<Course> findByNameAndDegree(String name, Degree degree);
+
+    /**
+     * Counts courses by degree ID.
+     * 
+     * @param degreeId the ID of the degree
+     * @return the count of courses in the specified degree
+     */
+    long countByDegreeId(Long degreeId);
+
+    /**
+     * Counts students in a course.
+     * 
+     * @param courseId the ID of the course
+     * @return the count of students in the specified course
+     */
+    @Query("SELECT COUNT(s) FROM Course c JOIN c.students s WHERE c.id = :courseId")
+    long countStudentsByCourseId(@Param("courseId") Long courseId);
+
+    /**
+     * Counts teachers in a course.
+     * 
+     * @param courseId the ID of the course
+     * @return the count of teachers in the specified course
+     */
+    @Query("SELECT COUNT(t) FROM Course c JOIN c.teachers t WHERE c.id = :courseId")
+    long countTeachersByCourseId(@Param("courseId") Long courseId);
+
+    /**
+     * Counts courses taught by a specific teacher.
+     * 
+     * @param teacherId the ID of the teacher
+     * @return the count of courses taught by the specified teacher
+     */
+    @Query("SELECT COUNT(c) FROM Course c JOIN c.teachers t WHERE t.id = :teacherId")
+    long countCoursesByTeacherId(@Param("teacherId") Long teacherId);
 }
