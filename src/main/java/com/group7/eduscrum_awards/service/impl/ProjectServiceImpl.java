@@ -7,6 +7,7 @@ import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Project;
+import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
@@ -79,9 +80,9 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional(readOnly = true)
     public List<StudentProjectDTO> getMyProjects(Long studentId) {
 
-        if (!userRepository.existsById(studentId)) {
-             throw new ResourceNotFoundException("Student not found with id: " + studentId);
-        }
+        userRepository.findById(studentId)
+            .filter(user -> user instanceof Student)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
         // Fetch projects associated with the student from the repository
         List<Project> projects = projectRepository.findProjectsByStudentId(studentId);
