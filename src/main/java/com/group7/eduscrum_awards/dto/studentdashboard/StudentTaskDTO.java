@@ -12,14 +12,12 @@ import lombok.Setter;
 @Setter
 public class StudentTaskDTO {
     private Long id;
-    private String title;
     private String description;
     private String status;
     private String teamMemberName;
 
     public StudentTaskDTO(Task task) {
         this.id = task.getId();
-        this.title = task.getDescription();
         this.description = task.getDescription();
         this.status = task.getStatus().name();
         if (task.getTeamMember() != null) {
