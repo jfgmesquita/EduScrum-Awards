@@ -28,7 +28,7 @@ public class TaskController {
     /**
      * Endpoint to create a new Task within a specific Sprint.
      * This endpoint is intended to be called by a Student (Product Owner).
-     * Accessible via: POST http://localhost:8080/api/v1/sprints/{sprintId}/tasks
+     * Accessible via: POST /api/v1/sprints/{sprintId}/tasks
      *
      * @param sprintId The ID of the parent Sprint (from the URL path).
      * @param taskCreateDTO The task data (description) from the request body.
@@ -46,7 +46,7 @@ public class TaskController {
     /**
      * Endpoint to assign a Task to a TeamMember (Developer).
      * This endpoint is intended to be called by a Student (Product Owner).
-     * Accessible via: PATCH http://localhost:8080/api/v1/tasks/{taskId}/assign
+     * Accessible via: PATCH /api/v1/tasks/{taskId}/assign
      *
      * @param taskId The ID of the Task to be updated.
      * @param assignDTO The JSON body containing the teamMemberId.

@@ -39,7 +39,7 @@ public class UserController {
 
     /**
      * Endpoint to register a new User (Admin, Student, or Teacher).
-     * Accessible via: POST http://localhost:8080/api/v1/users
+     * Accessible via: POST /api/v1/users
      *
      * @param userCreateDTO The user data from the request body.
      * @return A ResponseEntity containing the created UserDTO and HTTP status 201.
@@ -56,7 +56,7 @@ public class UserController {
 
     /**
      * Endpoint to register a new Teacher and optionally assign to a Course.
-     * Accessible via: POST http://localhost:8080/api/v1/users/teachers
+     * Accessible via: POST /api/v1/users/teachers
      * 
      * @param dto The teacher registration data from the request body.
      * @return A ResponseEntity containing the created Teacher UserDTO and HTTP status 201.

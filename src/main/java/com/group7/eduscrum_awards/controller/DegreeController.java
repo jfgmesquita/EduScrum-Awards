@@ -34,7 +34,7 @@ public class DegreeController {
 
     /**
      * Endpoint to register a new Degree.
-     * Accessible via: POST http://localhost:8080/api/v1/degrees
+     * Accessible via: POST /api/v1/degrees
      *
      * @param degreeCreateDTO The data for the new Degree, passed in the request body.
      * @return A ResponseEntity containing the created DegreeDTO and HTTP status 201.
@@ -51,7 +51,7 @@ public class DegreeController {
     
     /**
      * Endpoint to assign an existing Student to an existing Degree.
-     * Accessible via: POST http://localhost:8080/api/v1/degrees/{degreeId}/students/{studentId}
+     * Accessible via: POST /api/v1/degrees/{degreeId}/students/{studentId}
      *
      * @param degreeId The ID of the Degree.
      * @param studentId The ID of the Student to be assigned.
@@ -67,7 +67,7 @@ public class DegreeController {
 
     /**
      * Endpoint to retrieve all Degrees.
-     * Accessible via: GET http://localhost:8080/api/v1/degrees
+     * Accessible via: GET /api/v1/degrees
      * 
      * @return A ResponseEntity containing the list of DegreeDTOs and HTTP status 200.
      */
