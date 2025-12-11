@@ -31,7 +31,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Counts users by their role.
      * 
-     * @param role
+     * @param role the role to count users by
      * @return the count of users with the specified role
      */
     long countByRole(Role role);
@@ -39,8 +39,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Counts students by their degree ID and role.
      * 
-     * @param degreeId
-     * @param role
+     * @param degreeId the ID of the degree
+     * @param role the role to count students by
      * @return the count of students in the given degree with the specified role
      */
     @Query("SELECT COUNT(s) FROM Student s WHERE s.degree.id = :degreeId AND s.role = :role")
@@ -49,7 +49,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     /**
      * Counts distinct teachers associated with courses in a given degree.
      * 
-     * @param degreeId
+     * @param degreeId the ID of the degree
      * @return the count of distinct teachers in the given degree
      */
     @Query("SELECT COUNT(DISTINCT t) FROM Course c JOIN c.teachers t WHERE c.degree.id = :degreeId")
