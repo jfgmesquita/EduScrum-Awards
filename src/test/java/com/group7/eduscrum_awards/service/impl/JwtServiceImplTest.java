@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/** Unit tests for JwtServiceImpl. */
 @ExtendWith(MockitoExtension.class)
 class JwtServiceImplTest {
 
