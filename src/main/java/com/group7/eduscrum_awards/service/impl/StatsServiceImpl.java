@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.stats.*;
 import com.group7.eduscrum_awards.model.enums.Role;
+import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
@@ -56,13 +57,15 @@ public class StatsServiceImpl implements StatsService {
     @Transactional(readOnly = true)
     public CourseStatsDTO getCourseStats(Long courseId) {
 
-        if (!courseRepository.existsById(courseId)) {
-            throw new ResourceNotFoundException("Course not found with id: " + courseId);
-        }
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+
+        String degreeName = (course.getDegree() != null) ? course.getDegree().getName() : "N/A";
 
         return new CourseStatsDTO(
             courseRepository.countStudentsByCourseId(courseId),
-            courseRepository.countTeachersByCourseId(courseId)
+            courseRepository.countTeachersByCourseId(courseId),
+            degreeName
         );
     }
 
