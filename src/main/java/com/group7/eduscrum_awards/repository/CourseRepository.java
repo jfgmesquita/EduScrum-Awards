@@ -29,7 +29,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     /**
      * Counts courses by degree ID.
      * 
-     * @param degreeId
+     * @param degreeId the ID of the degree
      * @return the count of courses in the specified degree
      */
     long countByDegreeId(Long degreeId);
@@ -37,7 +37,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     /**
      * Counts students in a course.
      * 
-     * @param courseId
+     * @param courseId the ID of the course
      * @return the count of students in the specified course
      */
     @Query("SELECT COUNT(s) FROM Course c JOIN c.students s WHERE c.id = :courseId")
@@ -46,7 +46,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     /**
      * Counts teachers in a course.
      * 
-     * @param courseId
+     * @param courseId the ID of the course
      * @return the count of teachers in the specified course
      */
     @Query("SELECT COUNT(t) FROM Course c JOIN c.teachers t WHERE c.id = :courseId")
@@ -55,7 +55,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     /**
      * Counts courses taught by a specific teacher.
      * 
-     * @param teacherId
+     * @param teacherId the ID of the teacher
      * @return the count of courses taught by the specified teacher
      */
     @Query("SELECT COUNT(c) FROM Course c JOIN c.teachers t WHERE t.id = :teacherId")
