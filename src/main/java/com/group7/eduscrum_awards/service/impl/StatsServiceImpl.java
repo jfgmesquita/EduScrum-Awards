@@ -6,6 +6,7 @@ import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.StatsService;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,11 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional(readOnly = true)
     public DegreeStatsDTO getDegreeStats(Long degreeId) {
+
+        if (!degreeRepository.existsById(degreeId)) {
+            throw new ResourceNotFoundException("Degree not found with id: " + degreeId);
+        }
+
         return new DegreeStatsDTO(
             courseRepository.countByDegreeId(degreeId),
             userRepository.countByDegreeIdAndRole(degreeId, Role.STUDENT),
@@ -49,6 +55,11 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional(readOnly = true)
     public CourseStatsDTO getCourseStats(Long courseId) {
+
+        if (!courseRepository.existsById(courseId)) {
+            throw new ResourceNotFoundException("Course not found with id: " + courseId);
+        }
+
         return new CourseStatsDTO(
             courseRepository.countStudentsByCourseId(courseId),
             courseRepository.countTeachersByCourseId(courseId)
@@ -59,6 +70,11 @@ public class StatsServiceImpl implements StatsService {
     @Override
     @Transactional(readOnly = true)
     public TeacherStatsDTO getTeacherStats(Long teacherId) {
+
+        if (!userRepository.existsById(teacherId)) {
+            throw new ResourceNotFoundException("Teacher not found with id: " + teacherId);
+        }
+
         return new TeacherStatsDTO(
             courseRepository.countCoursesByTeacherId(teacherId)
         );
