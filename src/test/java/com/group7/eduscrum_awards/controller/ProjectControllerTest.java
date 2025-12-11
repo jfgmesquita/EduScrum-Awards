@@ -5,6 +5,7 @@ import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.service.JwtService;
 import com.group7.eduscrum_awards.service.ProjectService;
@@ -104,5 +105,19 @@ class ProjectControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Student Project"));
         
         verify(projectService, times(1)).getMyProjects(studentId);
+    }
+
+    @Test
+    @DisplayName("getStudentProjects | Should return 404 when student not found")
+    @WithMockUser(roles = "TEACHER")
+    void testGetStudentProjects_NotFound() throws Exception {
+        Long studentId = 99L;
+        
+        when(projectService.getMyProjects(studentId))
+            .thenThrow(new ResourceNotFoundException("Student not found"));
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/projects", studentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }
