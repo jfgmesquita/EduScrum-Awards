@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -54,4 +55,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     @Query("SELECT COUNT(DISTINCT t) FROM Course c JOIN c.teachers t WHERE c.degree.id = :degreeId")
     long countDistinctTeachersByDegreeId(@Param("degreeId") Long degreeId);
+
+    /**
+     * Finds all users by their role.
+     * 
+     * @param role the role to filter users by
+     * @return a list of users with the specified role
+     */
+    List<User> findAllByRole(Role role);
 }
