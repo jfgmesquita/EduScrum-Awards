@@ -1,7 +1,12 @@
 package com.group7.eduscrum_awards.service;
 
+import java.util.List;
+
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
+import com.group7.eduscrum_awards.exception.DuplicateResourceException;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
 /**
  * Service Interface (Contract) for Project operations.
@@ -20,4 +25,13 @@ public interface ProjectService {
      * @throws DuplicateResourceException if a Project with the same name already exists in that Course.
      */
     ProjectDTO createProject(Long courseId, ProjectCreateDTO projectCreateDTO);
+
+    /**
+     * Retrieves all projects associated with a specific student.
+     * Each project includes only the sprints and tasks relevant to that student.
+     * 
+     * @param studentId The ID of the student.
+     * @return A list of StudentProjectDTOs representing the student's projects.
+     */
+    List<StudentProjectDTO> getMyProjects(Long studentId);
 }
