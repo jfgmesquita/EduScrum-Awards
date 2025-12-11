@@ -7,10 +7,14 @@ import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.CourseService;
 import com.group7.eduscrum_awards.service.UserService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -79,5 +83,27 @@ public class UserController {
         }
 
         return new ResponseEntity<>(createdTeacher, HttpStatus.CREATED);
+    }
+
+    /**
+     * Get all students.
+     * Accessible via: GET /api/v1/users/students
+     * 
+     * @return A ResponseEntity containing a list of UserDTOs representing all students.
+     */
+    @GetMapping("/students")
+    public ResponseEntity<List<UserDTO>> getAllStudents() {
+        return ResponseEntity.ok(userService.getAllStudents());
+    }
+
+    /**
+     * Get all teachers.
+     * Accessible via: GET /api/v1/users/teachers
+     * 
+     * @return A ResponseEntity containing a list of UserDTOs representing all teachers.
+     */
+    @GetMapping("/teachers")
+    public ResponseEntity<List<UserDTO>> getAllTeachers() {
+        return ResponseEntity.ok(userService.getAllTeachers());
     }
 }
