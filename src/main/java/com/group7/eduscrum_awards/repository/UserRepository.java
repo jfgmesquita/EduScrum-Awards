@@ -1,7 +1,11 @@
 package com.group7.eduscrum_awards.repository;
 
 import com.group7.eduscrum_awards.model.User;
+import com.group7.eduscrum_awards.model.enums.Role;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -24,6 +28,30 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     Optional<User> findByEmail(String email);
     
-    // Useful finders for the future can be added here, e.g.:
-    // Optional<User> findByRole(Role role);
+    /**
+     * Counts users by their role.
+     * 
+     * @param role
+     * @return the count of users with the specified role
+     */
+    long countByRole(Role role);
+    
+    /**
+     * Counts students by their degree ID and role.
+     * 
+     * @param degreeId
+     * @param role
+     * @return the count of students in the given degree with the specified role
+     */
+    @Query("SELECT COUNT(s) FROM Student s WHERE s.degree.id = :degreeId AND s.role = :role")
+    long countByDegreeIdAndRole(@Param("degreeId") Long degreeId, @Param("role") Role role);
+
+    /**
+     * Counts distinct teachers associated with courses in a given degree.
+     * 
+     * @param degreeId
+     * @return the count of distinct teachers in the given degree
+     */
+    @Query("SELECT COUNT(DISTINCT t) FROM Course c JOIN c.teachers t WHERE c.degree.id = :degreeId")
+    long countDistinctTeachersByDegreeId(@Param("degreeId") Long degreeId);
 }
