@@ -66,12 +66,15 @@ class StatsControllerTest {
     void getCourseStats_ShouldReturnData() throws Exception {
 
         Long courseId = 10L;
-        when(statsService.getCourseStats(courseId)).thenReturn(new CourseStatsDTO(30, 2));
+        
+        when(statsService.getCourseStats(courseId))
+            .thenReturn(new CourseStatsDTO(30, 2, "Software Engineering"));
 
         mockMvc.perform(get("/api/v1/stats/courses/" + courseId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.studentsCount").value(30))
-                .andExpect(jsonPath("$.teachersCount").value(2));
+                .andExpect(jsonPath("$.teachersCount").value(2))
+                .andExpect(jsonPath("$.degreeName").value("Software Engineering"));
     }
 
     @Test
