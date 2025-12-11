@@ -37,8 +37,10 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
      * @return a list of {@link Project} entities associated with the student.
      */
     @Query("SELECT DISTINCT p FROM Project p " +
-           "JOIN p.teams t " +
-           "JOIN t.members tm " +
-           "WHERE tm.student.id = :studentId")
+           "LEFT JOIN FETCH p.sprints s " +
+           "LEFT JOIN FETCH s.tasks t " + 
+           "JOIN p.teams tm " +
+           "JOIN tm.members m " +
+           "WHERE m.student.id = :studentId")
     List<Project> findProjectsByStudentId(@Param("studentId") Long studentId);
 }
