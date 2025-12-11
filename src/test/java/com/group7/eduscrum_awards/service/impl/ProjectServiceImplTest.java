@@ -6,8 +6,11 @@ import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Project;
+import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
+import com.group7.eduscrum_awards.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -39,36 +43,37 @@ class ProjectServiceImplTest {
     @Mock
     private CourseRepository courseRepository;
 
+    @Mock 
+    private UserRepository userRepository;
+
     @InjectMocks
     private ProjectServiceImpl projectService;
-
+    
     private Course existingCourse;
     private ProjectCreateDTO createDTO;
     private Project savedProject;
+    private Student student;
 
     @BeforeEach
     void setUp() {
-        // Simulate the parent Course
+        // Setup base data
         existingCourse = new Course("Test Course");
         existingCourse.setId(1L);
 
-        // Simulate the DTO from the controller
         createDTO = new ProjectCreateDTO();
         createDTO.setName("Test Project");
-        createDTO.setDescription("A test description.");
-        createDTO.setStartDate(LocalDate.of(2025, 1, 1));
-        createDTO.setEndDate(LocalDate.of(2025, 5, 1));
+        createDTO.setDescription("Desc");
+        createDTO.setStartDate(LocalDate.now());
+        createDTO.setEndDate(LocalDate.now().plusMonths(1));
 
-        // Simulate the Project entity as it would be saved in the DB
-        savedProject = new Project(
-            createDTO.getName(),
-            createDTO.getDescription(),
-            existingCourse,
-            createDTO.getStartDate(),
-            createDTO.getEndDate()
-        );
+        savedProject = new Project(createDTO.getName(), createDTO.getDescription(), existingCourse, createDTO.getStartDate(), createDTO.getEndDate());
         savedProject.setId(10L);
+
+        student = new Student("John", "john@test.com", "pass");
+        student.setId(5L);
     }
+
+    // Tests for createProject
 
     @Test
     @DisplayName("createProject | Should create project successfully")
@@ -83,8 +88,12 @@ class ProjectServiceImplTest {
         assertNotNull(result);
         assertEquals(10L, result.getId());
         assertEquals("Test Project", result.getName());
-        assertEquals("A test description.", result.getDescription());
-        assertEquals(LocalDate.of(2025, 1, 1), result.getStartDate());
+        
+        // CORREÇÃO: Validar com os dados definidos no setUp() ("Desc")
+        assertEquals("Desc", result.getDescription());
+        
+        // CORREÇÃO: Validar com a data definida no setUp() (LocalDate.now())
+        assertEquals(createDTO.getStartDate(), result.getStartDate());
         assertEquals(1L, result.getCourseId());
 
         verify(courseRepository, times(1)).findById(1L);
@@ -126,5 +135,17 @@ class ProjectServiceImplTest {
         verify(courseRepository, times(1)).findById(1L);
         verify(projectRepository, times(1)).findByNameAndCourse("Test Project", existingCourse);
         verify(projectRepository, never()).save(any());
+    }
+
+    // Tests for getMyProjects
+
+    @Test
+    @DisplayName("getMyProjects | Should throw exception if student not found")
+    void testGetMyProjects_StudentNotFound() {
+        when(userRepository.existsById(99L)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> projectService.getMyProjects(99L));
+        
+        verify(projectRepository, never()).findProjectsByStudentId(any());
     }
 }
