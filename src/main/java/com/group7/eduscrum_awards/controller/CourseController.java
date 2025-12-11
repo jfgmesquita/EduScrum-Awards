@@ -77,7 +77,7 @@ public class CourseController {
     }
 
     /**
-     * Engpoint to retrieve all Courses.
+     * Endpoint to retrieve all Courses.
      * Accessible via: GET http://localhost:8080/api/v1/courses
      * 
      * @return A ResponseEntity containing the list of CourseDTOs and HTTP status 200.
