@@ -33,6 +33,7 @@ public class StudentProjectDTO {
 
         if (project.getSprints() != null) {
             this.sprints = project.getSprints().stream()
+                .sorted(java.util.Comparator.comparing(sprint -> sprint.getSprintNumber()))
                 .map(sprint -> new StudentSprintDTO(sprint, studentId)) // We pass studentId here
                 .collect(Collectors.toList());
         }

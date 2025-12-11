@@ -32,6 +32,7 @@ public interface ProjectService {
      * 
      * @param studentId The ID of the student.
      * @return A list of StudentProjectDTOs representing the student's projects.
+     * @throws ResourceNotFoundException if the student with the given ID is not found.
      */
     List<StudentProjectDTO> getMyProjects(Long studentId);
 }

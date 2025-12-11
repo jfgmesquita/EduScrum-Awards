@@ -89,10 +89,10 @@ class ProjectServiceImplTest {
         assertEquals(10L, result.getId());
         assertEquals("Test Project", result.getName());
         
-        // CORREÇÃO: Validar com os dados definidos no setUp() ("Desc")
+        // Validate with data defined in setUp() ("Desc")
         assertEquals("Desc", result.getDescription());
         
-        // CORREÇÃO: Validar com a data definida no setUp() (LocalDate.now())
+        // Validate with the date defined in setUp() (LocalDate.now())
         assertEquals(createDTO.getStartDate(), result.getStartDate());
         assertEquals(1L, result.getCourseId());
 
