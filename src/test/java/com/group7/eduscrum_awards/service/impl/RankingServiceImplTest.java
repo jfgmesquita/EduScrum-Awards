@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+/** Unit tests for RankingServiceImpl. */
 @ExtendWith(MockitoExtension.class)
 class RankingServiceImplTest {
 
