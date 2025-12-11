@@ -2,6 +2,8 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.stats.*;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
+import com.group7.eduscrum_awards.model.Course;
+import com.group7.eduscrum_awards.model.Degree;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
@@ -12,6 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,12 +67,17 @@ class StatsServiceImplTest {
     }
 
     @Test
-    @DisplayName("getCourseStats | Should return counts for specific course")
+    @DisplayName("getCourseStats | Should return counts and Degree Name for specific course")
     void testGetCourseStats() {
         Long courseId = 10L;
 
-        when(courseRepository.existsById(courseId)).thenReturn(true);
+        Degree mockDegree = new Degree("Software Engineering");
+        Course mockCourse = new Course();
+        mockCourse.setId(courseId);
+        mockCourse.setDegree(mockDegree);
 
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(mockCourse));
+        
         when(courseRepository.countStudentsByCourseId(courseId)).thenReturn(30L);
         when(courseRepository.countTeachersByCourseId(courseId)).thenReturn(2L);
 
@@ -76,6 +85,7 @@ class StatsServiceImplTest {
 
         assertEquals(30, result.getStudentsCount());
         assertEquals(2, result.getTeachersCount());
+        assertEquals("Software Engineering", result.getDegreeName()); // Novo assert
     }
 
     @Test
@@ -108,7 +118,8 @@ class StatsServiceImplTest {
     @DisplayName("getCourseStats | Should throw exception when course not found")
     void testGetCourseStats_NotFound() {
         Long courseId = 999L;
-        when(courseRepository.existsById(courseId)).thenReturn(false);
+        
+        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> 
             statsService.getCourseStats(courseId));
