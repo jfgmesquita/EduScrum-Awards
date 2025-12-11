@@ -1,6 +1,7 @@
 package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.stats.*;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
@@ -13,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /** Unit tests for StatsServiceImpl. */
@@ -46,6 +48,9 @@ class StatsServiceImplTest {
     @DisplayName("getDegreeStats | Should return counts for specific degree")
     void testGetDegreeStats() {
         Long degreeId = 1L;
+        
+        when(degreeRepository.existsById(degreeId)).thenReturn(true);
+        
         when(courseRepository.countByDegreeId(degreeId)).thenReturn(3L);
         when(userRepository.countByDegreeIdAndRole(degreeId, Role.STUDENT)).thenReturn(50L);
         when(userRepository.countDistinctTeachersByDegreeId(degreeId)).thenReturn(5L);
@@ -61,6 +66,9 @@ class StatsServiceImplTest {
     @DisplayName("getCourseStats | Should return counts for specific course")
     void testGetCourseStats() {
         Long courseId = 10L;
+
+        when(courseRepository.existsById(courseId)).thenReturn(true);
+
         when(courseRepository.countStudentsByCourseId(courseId)).thenReturn(30L);
         when(courseRepository.countTeachersByCourseId(courseId)).thenReturn(2L);
 
@@ -74,10 +82,35 @@ class StatsServiceImplTest {
     @DisplayName("getTeacherStats | Should return course count for teacher")
     void testGetTeacherStats() {
         Long teacherId = 99L;
+
+        when(userRepository.existsById(teacherId)).thenReturn(true);
+
         when(courseRepository.countCoursesByTeacherId(teacherId)).thenReturn(4L);
 
         TeacherStatsDTO result = statsService.getTeacherStats(teacherId);
 
         assertEquals(4, result.getCoursesCount());
+    }
+
+    @Test
+    @DisplayName("getDegreeStats | Should throw exception when degree not found")
+    void testGetDegreeStats_NotFound() {
+        Long degreeId = 999L;
+        when(degreeRepository.existsById(degreeId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> 
+            statsService.getDegreeStats(degreeId));
+        
+        verify(courseRepository, never()).countByDegreeId(any());
+    }
+
+    @Test
+    @DisplayName("getCourseStats | Should throw exception when course not found")
+    void testGetCourseStats_NotFound() {
+        Long courseId = 999L;
+        when(courseRepository.existsById(courseId)).thenReturn(false);
+
+        assertThrows(ResourceNotFoundException.class, () -> 
+            statsService.getCourseStats(courseId));
     }
 }
