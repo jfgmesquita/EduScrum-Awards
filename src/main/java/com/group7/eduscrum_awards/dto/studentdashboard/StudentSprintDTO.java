@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,8 +42,11 @@ public class StudentSprintDTO {
         // only include tasks assigned to the specified student
         if (sprint.getTasks() != null) {
             this.tasks = sprint.getTasks().stream()
-                .filter(t -> t.getTeamMember() != null && t.getTeamMember().getStudent().getId().equals(studentId))
+                .filter(t -> t.getTeamMember() != null && 
+                            t.getTeamMember().getStudent() != null &&
+                            t.getTeamMember().getStudent().getId().equals(studentId))
                 .map(StudentTaskDTO::new)
+                .sorted(Comparator.comparing(StudentTaskDTO::getId))
                 .collect(Collectors.toList());
         }
     }
