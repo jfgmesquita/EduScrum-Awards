@@ -265,4 +265,38 @@ class UserServiceImplTest {
         verify(passwordEncoder).encode(newPass);
         verify(userRepository).save(user);
     }
+
+    @Test
+    @DisplayName("getUserByEmail | Should return UserDTO when user exists")
+    void testGetUserByEmail_Success() {
+
+        String email = "existing@test.com";
+        User user = new User("Existing User", email, "pass", Role.STUDENT);
+        user.setId(5L);
+
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+        UserDTO result = userService.getUserByEmail(email);
+
+        assertNotNull(result);
+        assertEquals(5L, result.getId());
+        assertEquals(email, result.getEmail());
+        verify(userRepository, times(1)).findByEmail(email);
+    }
+
+    @Test
+    @DisplayName("getUserByEmail | Should throw EntityNotFoundException when user does not exist")
+    void testGetUserByEmail_NotFound() {
+
+        String email = "unknown@test.com";
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+        jakarta.persistence.EntityNotFoundException exception = assertThrows(
+            jakarta.persistence.EntityNotFoundException.class,
+            () -> userService.getUserByEmail(email)
+        );
+
+        assertEquals("User not found", exception.getMessage());
+        verify(userRepository, times(1)).findByEmail(email);
+    }
 }
