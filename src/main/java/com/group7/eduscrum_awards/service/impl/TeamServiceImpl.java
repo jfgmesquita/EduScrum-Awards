@@ -14,6 +14,10 @@ import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
 import com.group7.eduscrum_awards.service.TeamService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,5 +119,18 @@ public class TeamServiceImpl implements TeamService {
 
         // Return the Team DTO
         return new TeamDTO(team);
+    }
+
+    /**
+     * Retrieves all teams associated with a specific project.
+     * 
+     * @param projectId The ID of the project.
+     * @return A list of TeamDTOs representing the teams in the project.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TeamDTO> getTeamsByProject(Long projectId) {
+        return teamRepository.findByProjectId(projectId).stream()
+                .map(TeamDTO::new).collect(Collectors.toList());
     }
 }
