@@ -2,7 +2,11 @@ package com.group7.eduscrum_awards.controller;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
+import com.group7.eduscrum_awards.dto.CourseUpdateDTO;
+import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.service.CourseService;
+import com.group7.eduscrum_awards.service.ProjectService;
+
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -26,10 +31,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class CourseController {
 
     private final CourseService courseService;
+    private final ProjectService projectService;
 
     @Autowired
-    public CourseController(CourseService courseService) {
+    public CourseController(CourseService courseService, ProjectService projectService) {
         this.courseService = courseService;
+        this.projectService = projectService;   
     }
 
     /**
@@ -85,5 +92,66 @@ public class CourseController {
     @GetMapping("/courses")
     public ResponseEntity<List<CourseDTO>> getAllCourses() {
         return ResponseEntity.ok(courseService.getAllCourses());
+    }
+
+    /**
+     * Endpoint to retrieve all Courses associated with a specific Degree.
+     * Accessible via: GET /api/v1/degrees/{degreeId}/courses
+     * 
+     * @param degreeId The ID of the Degree.
+     * @return A ResponseEntity containing the list of CourseDTOs and HTTP status 200.
+     */
+    @GetMapping("/degrees/{degreeId}/courses")
+    public ResponseEntity<List<CourseDTO>> getCoursesByDegree(@PathVariable Long degreeId) {
+        return ResponseEntity.ok(courseService.getCoursesByDegree(degreeId));
+    }
+
+    /**
+     * Endpoint to retrieve all Courses taught by a specific Teacher.
+     * Accessible via: GET /api/v1/teachers/{teacherId}/courses
+     * 
+     * @param teacherId The ID of the Teacher.
+     * @return A ResponseEntity containing the list of CourseDTOs and HTTP status 200.
+     */
+    @GetMapping("/teachers/{teacherId}/courses")
+    public ResponseEntity<List<CourseDTO>> getCoursesByTeacher(@PathVariable Long teacherId) {
+        return ResponseEntity.ok(courseService.getCoursesByTeacher(teacherId));
+    }
+
+    /**
+     * Endpoint to retrieve all Students enrolled in a specific Course.
+     * Accessible via: GET /api/v1/courses/{courseId}/students
+     * 
+     * @param courseId The ID of the Course.
+     * @return A ResponseEntity containing the list of UserDTOs and HTTP status 200.
+     */
+    @GetMapping("/courses/{courseId}/students")
+    public ResponseEntity<List<UserDTO>> getStudentsInCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(courseService.getStudentsInCourse(courseId));
+    }
+
+    /**
+     * Endpoint to retrieve a summary of all Projects associated with a specific Course.
+     * Accessible via: GET /api/v1/courses/{courseId}/projects/summary
+     * 
+     * @param courseId The ID of the Course.
+     * @return A ResponseEntity containing the list of ProjectSummaryDTOs and HTTP status 200.
+     */
+    @GetMapping("/courses/{courseId}/projects/summary")
+    public ResponseEntity<List<com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO>> getProjectsSummary(@PathVariable Long courseId) {
+        return ResponseEntity.ok(projectService.getProjectsSummary(courseId));
+    }
+
+    /**
+     * Endpoint to update an existing Course.
+     * Accessible via: PUT /api/v1/courses/{id}
+     * 
+     * @param id The ID of the Course to be updated.
+     * @param dto The updated data for the Course, passed in the request body.
+     * @return A ResponseEntity containing the updated CourseDTO and HTTP status 200.
+     */
+    @PutMapping("/courses/{id}")
+    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long id, @RequestBody CourseUpdateDTO dto) {
+        return ResponseEntity.ok(courseService.updateCourse(id, dto));
     }
 }
