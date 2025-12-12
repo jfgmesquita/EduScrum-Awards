@@ -4,6 +4,7 @@ import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
 import com.group7.eduscrum_awards.dto.CourseUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.service.CourseService;
 import com.group7.eduscrum_awards.service.ProjectService;
 
@@ -138,7 +139,7 @@ public class CourseController {
      * @return A ResponseEntity containing the list of ProjectSummaryDTOs and HTTP status 200.
      */
     @GetMapping("/courses/{courseId}/projects/summary")
-    public ResponseEntity<List<com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO>> getProjectsSummary(@PathVariable Long courseId) {
+    public ResponseEntity<List<ProjectSummaryDTO>> getProjectsSummary(@PathVariable Long courseId) {
         return ResponseEntity.ok(projectService.getProjectsSummary(courseId));
     }
 
@@ -151,7 +152,7 @@ public class CourseController {
      * @return A ResponseEntity containing the updated CourseDTO and HTTP status 200.
      */
     @PutMapping("/courses/{id}")
-    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long id, @RequestBody CourseUpdateDTO dto) {
+    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long id, @Valid @RequestBody CourseUpdateDTO dto) {
         return ResponseEntity.ok(courseService.updateCourse(id, dto));
     }
 }
