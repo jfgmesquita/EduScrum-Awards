@@ -81,7 +81,7 @@ public interface CourseService {
      */
     public List<UserDTO> getStudentsInCourse(Long courseId);
 
-        /**
+    /**
      * Updates the details of an existing course.
      * 
      * @param id  The ID of the course to update.
