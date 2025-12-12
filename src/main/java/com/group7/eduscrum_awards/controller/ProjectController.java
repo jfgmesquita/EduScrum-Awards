@@ -2,10 +2,14 @@ package com.group7.eduscrum_awards.controller;
 
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.service.ProjectService;
+import com.group7.eduscrum_awards.service.UserService;
+
 import jakarta.validation.Valid;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +26,12 @@ import org.springframework.web.bind.annotation.*;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final UserService userService;
 
     @Autowired
-    public ProjectController(ProjectService projectService) {
+    public ProjectController(ProjectService projectService, UserService userService) {
         this.projectService = projectService;
+        this.userService = userService;
     }
 
     /**
@@ -55,7 +61,20 @@ public class ProjectController {
      * @return A ResponseEntity containing a list of StudentProjectDTOs.
      */
     @GetMapping("/students/{studentId}/projects")
-    public ResponseEntity<List<StudentProjectDTO>> getStudentProjects(@PathVariable Long studentId) {
+    public ResponseEntity<List<StudentProjectDTO>> getStudentProjects(
+            @PathVariable Long studentId, Principal principal) {
+
+        // Check who is the logged-in user
+        String loggedUsername = principal.getName();
+        UserDTO loggedUser = userService.getUserByUsername(loggedUsername);
+        
+        // Validate if the logged-in user is the owner of the data
+        boolean isOwner = loggedUser.getId().equals(studentId);
+
+        if (!isOwner) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         return ResponseEntity.ok(projectService.getMyProjects(studentId));
     }
 }

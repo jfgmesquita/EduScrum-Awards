@@ -1,14 +1,20 @@
 package com.group7.eduscrum_awards.service.impl;
 
+import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.enums.Role;
+import com.group7.eduscrum_awards.model.Degree;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
+import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.UserService;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,11 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final DegreeRepository degreeRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, DegreeRepository degreeRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.degreeRepository = degreeRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -128,5 +136,67 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAllByRole(Role.TEACHER).stream()
                 .map(UserDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Updates an existing student's information.
+     *
+     * @param id the ID of the student to update
+     * @param dto the DTO containing the updated information
+     * @return a {@link UserDTO} representing the updated student
+     * @throws ResourceNotFoundException when no user with the given ID exists
+     * @throws IllegalArgumentException when the user is not a student
+     */
+    @Override
+    @Transactional
+    public UserDTO updateStudent(Long id, StudentUpdateDTO dto) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+
+        if (!(user instanceof Student)) throw new IllegalArgumentException("User is not a student");
+        Student student = (Student) user;
+
+        if (dto.getName() != null) student.setName(dto.getName());
+        if (dto.getEmail() != null) student.setEmail(dto.getEmail());
+        if (dto.getDegreeId() != null) {
+            Degree degree = degreeRepository.findById(dto.getDegreeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Degree not found"));
+            student.setDegree(degree);
+        }
+        return new UserDTO(userRepository.save(student));
+    }
+
+    /**
+     * Updates the password of an existing user.
+     *
+     * @param userId the ID of the user whose password is to be updated
+     * @param newPassword the new password to set
+     * @throws ResourceNotFoundException when no user with the given ID exists
+     */
+    @Override
+    @Transactional
+    public void updatePassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        if (newPassword != null && !newPassword.isBlank()) {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+        }
+    }
+
+    /**
+     * Retrieves a user by their username.
+     *
+     * @param username the username of the user to retrieve
+     * @return a {@link UserDTO} representing the found user
+     * @throws EntityNotFoundException when no user with the given username exists
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public UserDTO getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return new UserDTO(user);
     }
 }
