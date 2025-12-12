@@ -8,5 +8,5 @@ import lombok.Setter;
 public class StudentUpdateDTO {
     private String name;
     private String email;
-    private Long degreeId; // Opcional: to update the associated degree
+    private Long degreeId; // Optional: to update the associated degree
 }
