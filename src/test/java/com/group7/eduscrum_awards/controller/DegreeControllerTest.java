@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
+import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
 import com.group7.eduscrum_awards.dto.DegreeUpdateDTO;
 import com.group7.eduscrum_awards.model.Degree;
@@ -28,11 +29,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/** Unit tests for DegreeController. */
 @WebMvcTest(DegreeController.class)
 class DegreeControllerTest {
 
@@ -61,6 +64,45 @@ class DegreeControllerTest {
             chain.doFilter(request, response);
             return null;
         }).when(jwtAuthenticationFilter).doFilter(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("registerDegree | Should create and return 201")
+    @WithMockUser(roles = "ADMIN")
+    void testRegisterDegree() throws Exception {
+        DegreeCreateDTO createDTO = new DegreeCreateDTO();
+        createDTO.setName("New Degree");
+
+        DegreeDTO responseDTO = new DegreeDTO();
+        responseDTO.setId(1L);
+        responseDTO.setName("New Degree");
+
+        when(degreeService.registerDegree(any(DegreeCreateDTO.class))).thenReturn(responseDTO);
+
+        mockMvc.perform(post("/api/v1/degrees")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("New Degree"));
+    }
+
+    @Test
+    @DisplayName("addStudentToDegree | Should return 200 OK")
+    @WithMockUser(roles = "ADMIN")
+    void testAddStudentToDegree() throws Exception {
+        Long degreeId = 1L;
+        Long studentId = 10L;
+
+        DegreeDTO responseDTO = new DegreeDTO();
+        responseDTO.setId(degreeId);
+
+        when(degreeService.addStudentToDegree(degreeId, studentId)).thenReturn(responseDTO);
+
+        mockMvc.perform(post("/api/v1/degrees/{degreeId}/students/{studentId}", degreeId, studentId)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(degreeId));
     }
 
     @Test
