@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
+import com.group7.eduscrum_awards.dto.DegreeUpdateDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Degree;
@@ -117,5 +118,28 @@ public class DegreeServiceImpl implements DegreeService {
     @Transactional(readOnly = true)
     public List<DegreeDTO> getAllDegrees() {
         return degreeRepository.findAll().stream().map(DegreeDTO::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Updates an existing degree's information.
+     * 
+     * Only non-null and non-blank fields in the DTO are updated.
+     * This method is transactional: on error the database changes are rolled back.
+     *
+     * @param id the ID of the degree to update
+     * @param dto the DTO containing the updated information
+     * @return a {@link DegreeDTO} representing the updated degree
+     * @throws ResourceNotFoundException when no degree with the given ID exists
+     */
+    @Override
+    @Transactional
+    public DegreeDTO updateDegree(Long id, DegreeUpdateDTO dto) {
+        Degree degree = degreeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Degree not found: " + id));
+        
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            degree.setName(dto.getName());
+        }
+        return new DegreeDTO(degreeRepository.save(degree));
     }
 }
