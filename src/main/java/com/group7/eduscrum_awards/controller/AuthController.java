@@ -21,7 +21,7 @@ public class AuthController {
 
     /**
      * Endpoint for user login.
-     * Accessible via: POST http://localhost:8080/api/v1/auth/login
+     * Accessible via: POST /api/v1/auth/login
      *
      * @param request The login request body (email and password).
      * @return A ResponseEntity containing the LoginResponseDTO (with the JWT).

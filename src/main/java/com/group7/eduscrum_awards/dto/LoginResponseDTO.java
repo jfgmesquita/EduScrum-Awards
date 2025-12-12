@@ -7,11 +7,13 @@ import lombok.Getter;
 public class LoginResponseDTO {
 
     private String token;
+    private Long id;
     private String email;
     private String role;
 
-    public LoginResponseDTO(String token, String email, String role) {
+    public LoginResponseDTO(String token, Long id, String email, String role) {
         this.token = token;
+        this.id = id;
         this.email = email;
         this.role = role;
     }

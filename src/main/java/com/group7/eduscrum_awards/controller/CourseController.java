@@ -34,7 +34,7 @@ public class CourseController {
 
     /**
      * Endpoint to register a new Course and link it to a Degree.
-     * Accessible via: POST http://localhost:8080/api/v1/degrees/{degreeId}/courses
+     * Accessible via: POST /api/v1/degrees/{degreeId}/courses
      */
     @PostMapping("/degrees/{degreeId}/courses")
     public ResponseEntity<CourseDTO> registerCourseForDegree(@PathVariable Long degreeId,
@@ -46,7 +46,7 @@ public class CourseController {
     
     /**
      * Endpoint to assign an existing Teacher to an existing Course.
-     * Accessible via: POST http://localhost:8080/api/v1/courses/{courseId}/teachers/{teacherId}
+     * Accessible via: POST /api/v1/courses/{courseId}/teachers/{teacherId}
      *
      * @param courseId The ID of the course to be updated.
      * @param teacherId The ID of the teacher to be assigned.
@@ -62,7 +62,7 @@ public class CourseController {
 
     /**
      * Endpoint to enroll an existing Student in an existing Course.
-     * Accessible via: POST http://localhost:8080/api/v1/courses/{courseId}/students/{studentId}
+     * Accessible via: POST /api/v1/courses/{courseId}/students/{studentId}
      *
      * @param courseId The ID of the course.
      * @param studentId The ID of the student to be enrolled.
@@ -78,7 +78,7 @@ public class CourseController {
 
     /**
      * Endpoint to retrieve all Courses.
-     * Accessible via: GET http://localhost:8080/api/v1/courses
+     * Accessible via: GET /api/v1/courses
      * 
      * @return A ResponseEntity containing the list of CourseDTOs and HTTP status 200.
      */

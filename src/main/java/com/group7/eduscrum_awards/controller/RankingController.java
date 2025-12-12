@@ -25,7 +25,7 @@ public class RankingController {
 
     /**
      * Get individual student rankings for a specific Degree.
-     * GET http://localhost:8080/api/v1/degrees/{degreeId}/rankings
+     * GET /api/v1/degrees/{degreeId}/rankings
      */
     @GetMapping("/degrees/{degreeId}/rankings")
     public ResponseEntity<List<RankingItemDTO>> getStudentRankings(@PathVariable Long degreeId) {
@@ -34,7 +34,7 @@ public class RankingController {
 
     /**
      * Get team rankings for a specific Course.
-     * GET http://localhost:8080/api/v1/courses/{courseId}/rankings/teams
+     * GET /api/v1/courses/{courseId}/rankings/teams
      */
     @GetMapping("/courses/{courseId}/rankings/teams")
     public ResponseEntity<List<RankingItemDTO>> getTeamRankings(@PathVariable Long courseId) {

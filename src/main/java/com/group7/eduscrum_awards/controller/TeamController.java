@@ -28,7 +28,7 @@ public class TeamController {
     /**
      * Endpoint to create a new Team within a specific Project.
      * This endpoint is intended to be called by a Teacher.
-     * Accessible via: POST http://localhost:8080/api/v1/projects/{projectId}/teams
+     * Accessible via: POST /api/v1/projects/{projectId}/teams
      *
      * @param projectId The ID of the parent Project (from the URL path).
      * @param teamCreateDTO The team data from the request body.
@@ -46,7 +46,7 @@ public class TeamController {
     /**
      * Endpoint to assign an existing Student to a Team with a specific role
      * This endpoint is intended to be called by a Teacher.
-     * Accessible via: POST http://localhost:8080/api/v1/teams/{teamId}/members
+     * Accessible via: POST /api/v1/teams/{teamId}/members
      *
      * @param teamId The ID of the Team.
      * @param createDTO The JSON body containing the studentId and teamRole.

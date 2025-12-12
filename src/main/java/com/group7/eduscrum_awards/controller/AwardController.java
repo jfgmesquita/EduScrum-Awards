@@ -29,7 +29,7 @@ public class AwardController {
 
     /**
      * Endpoint for a Teacher to create a custom Award for a specific Course.
-     * Accessible via: POST http://localhost:8080/api/v1/courses/{courseId}/awards
+     * Accessible via: POST /api/v1/courses/{courseId}/awards
      */
     @PostMapping("/courses/{courseId}/awards")
     public ResponseEntity<AwardDTO> createCustomAward(@PathVariable Long courseId,
@@ -41,7 +41,7 @@ public class AwardController {
 
     /**
      * Endpoint to list all available awards for a course (Global + Local).
-     * Accessible via: GET http://localhost:8080/api/v1/courses/{courseId}/awards
+     * Accessible via: GET /api/v1/courses/{courseId}/awards
      */
     @GetMapping("/courses/{courseId}/awards")
     public ResponseEntity<List<AwardDTO>> getAvailableAwards(@PathVariable Long courseId) {
@@ -51,7 +51,7 @@ public class AwardController {
 
     /**
      * Endpoint for a Teacher to assign an Award to a Student or Team.
-     * Accessible via: POST http://localhost:8080/api/v1/awards/{awardId}/assign
+     * Accessible via: POST /api/v1/awards/{awardId}/assign
      */
     @PostMapping("/awards/{awardId}/assign")
     public ResponseEntity<Void> assignAward(@PathVariable Long awardId,
@@ -63,7 +63,7 @@ public class AwardController {
 
     /**
      * Endpoint to get the portfolio of badges earned by a student.
-     * Accessible via: GET http://localhost:8080/api/v1/students/{studentId}/awards
+     * Accessible via: GET /api/v1/students/{studentId}/awards
      */
     @GetMapping("/students/{studentId}/awards")
     public ResponseEntity<List<com.group7.eduscrum_awards.dto.StudentAwardDTO>> getStudentAwards(

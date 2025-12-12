@@ -19,7 +19,7 @@ public class StatsController {
 
     /**
      * Endpoint to retrieve global statistics.
-     * Accessible via: GET http://localhost:8080/api/v1/stats/global
+     * Accessible via: GET /api/v1/stats/global
      */
     @GetMapping("/global")
     public ResponseEntity<GlobalStatsDTO> getGlobalStats() {
@@ -28,7 +28,7 @@ public class StatsController {
 
     /**
      * Endpoint to retrieve degree-specific statistics.
-     * Accessible via: GET http://localhost:8080/api/v1/stats/degrees/{degreeId}
+     * Accessible via: GET /api/v1/stats/degrees/{degreeId}
      */
     @GetMapping("/degrees/{degreeId}")
     public ResponseEntity<DegreeStatsDTO> getDegreeStats(@PathVariable Long degreeId) {
@@ -37,7 +37,7 @@ public class StatsController {
 
     /**
      * Endpoint to retrieve course-specific statistics.
-     * Accessible via: GET http://localhost:8080/api/v1/stats/courses/{courseId}
+     * Accessible via: GET /api/v1/stats/courses/{courseId}
      */
     @GetMapping("/courses/{courseId}")
     public ResponseEntity<CourseStatsDTO> getCourseStats(@PathVariable Long courseId) {
@@ -46,7 +46,7 @@ public class StatsController {
 
     /**
      * Endpoint to retrieve teacher-specific statistics.
-     * Accessible via: GET http://localhost:8080/api/v1/stats/teachers/{teacherId}
+     * Accessible via: GET /api/v1/stats/teachers/{teacherId}
      */
     @GetMapping("/teachers/{teacherId}")
     public ResponseEntity<TeacherStatsDTO> getTeacherStats(@PathVariable Long teacherId) {

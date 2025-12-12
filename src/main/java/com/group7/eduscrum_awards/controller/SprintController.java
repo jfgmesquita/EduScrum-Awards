@@ -27,7 +27,7 @@ public class SprintController {
     /**
      * Endpoint to create a new Sprint within a specific Project.
      * This endpoint is intended to be called by a PO.
-     * Accessible via: POST http://localhost:8080/api/v1/projects/{projectId}/sprints
+     * Accessible via: POST /api/v1/projects/{projectId}/sprints
      *
      * @param projectId The ID of the parent Project (from the URL path).
      * @param sprintCreateDTO The sprint data from the request body.
