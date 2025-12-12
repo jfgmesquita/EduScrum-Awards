@@ -1,5 +1,6 @@
 package com.group7.eduscrum_awards.service.impl;
 
+import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -224,5 +225,44 @@ class UserServiceImplTest {
         assertEquals(1, result.size());
         assertEquals("T1", result.get(0).getName());
         verify(userRepository, times(1)).findAllByRole(Role.TEACHER);
+    }
+
+    @Test
+    @DisplayName("updateStudent | Should update student details successfully")
+    void testUpdateStudent_Success() {
+
+        Long studentId = 1L;
+        StudentUpdateDTO updateDTO = new StudentUpdateDTO();
+        updateDTO.setName("New Name");
+        updateDTO.setEmail("new@test.com");
+        
+        Student existingStudent = new Student("Old Name", "old@test.com", "pass");
+        existingStudent.setId(studentId);
+        
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(existingStudent));
+        when(userRepository.save(any(Student.class))).thenAnswer(i -> i.getArguments()[0]); 
+        UserDTO result = userService.updateStudent(studentId, updateDTO);
+
+        assertEquals("New Name", result.getName());
+        assertEquals("new@test.com", result.getEmail());
+        verify(userRepository).save(existingStudent);
+    }
+
+    @Test
+    @DisplayName("updatePassword | Should encode and save new password")
+    void testUpdatePassword_Success() {
+
+        Long userId = 1L;
+        String newPass = "newPass123";
+        User user = new User();
+        user.setId(userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode(newPass)).thenReturn("encoded_pass");
+
+        userService.updatePassword(userId, newPass);
+
+        verify(passwordEncoder).encode(newPass);
+        verify(userRepository).save(user);
     }
 }
