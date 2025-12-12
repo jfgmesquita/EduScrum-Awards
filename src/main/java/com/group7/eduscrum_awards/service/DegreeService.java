@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
+import com.group7.eduscrum_awards.dto.DegreeUpdateDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
@@ -44,4 +45,17 @@ public interface DegreeService {
      * @return A list of {@link DegreeDTO} representing all degrees.
      */
     List<DegreeDTO> getAllDegrees();
+
+    /**
+     * Updates an existing degree's information.
+     * 
+     * Only non-null and non-blank fields in the DTO are updated.
+     * This method is transactional: on error the database changes are rolled back.
+     *
+     * @param id the ID of the degree to update
+     * @param dto the DTO containing the updated information
+     * @return a {@link DegreeDTO} representing the updated degree
+     * @throws ResourceNotFoundException when no degree with the given ID exists
+     */
+    public DegreeDTO updateDegree(Long id, DegreeUpdateDTO dto);
 }
