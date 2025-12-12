@@ -63,13 +63,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return a list of users with the specified role
      */
     List<User> findAllByRole(Role role);
-
-    /**
-     * Finds a user by their username.
-     * 
-     * @param username the username to search for
-     * @return an {@link Optional} containing the matching {@link User} if found,
-     * or an empty Optional if no user has that username
-     */
-    Optional<User> findByUsername(String username);
 }

@@ -194,8 +194,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional(readOnly = true)
-    public UserDTO getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+    public UserDTO getUserByUsername(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new UserDTO(user);
     }
