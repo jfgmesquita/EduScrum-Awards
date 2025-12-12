@@ -87,7 +87,7 @@ public class DegreeController {
      * @return A ResponseEntity containing the updated DegreeDTO and HTTP status 200.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<DegreeDTO> updateDegree(@PathVariable Long id, @RequestBody DegreeUpdateDTO dto) {
+    public ResponseEntity<DegreeDTO> updateDegree(@PathVariable Long id, @Valid @RequestBody DegreeUpdateDTO dto) {
         return ResponseEntity.ok(degreeService.updateDegree(id, dto));
     }
 }
