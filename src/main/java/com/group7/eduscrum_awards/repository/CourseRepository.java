@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -60,4 +62,21 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
      */
     @Query("SELECT COUNT(c) FROM Course c JOIN c.teachers t WHERE t.id = :teacherId")
     long countCoursesByTeacherId(@Param("teacherId") Long teacherId);
+
+    /**
+     * Finds all courses associated with a specific degree ID.
+     * 
+     * @param degreeId the ID of the degree
+     * @return a list of courses associated with the specified degree
+     */
+    List<Course> findByDegreeId(Long degreeId);
+
+    /**
+     * Finds all courses taught by a specific teacher.
+     * 
+     * @param teacherId the ID of the teacher
+     * @return a list of courses taught by the specified teacher
+     */
+    @Query("SELECT c FROM Course c JOIN c.teachers t WHERE t.id = :teacherId")
+    List<Course> findCoursesByTeacherId(@Param("teacherId") Long teacherId);
 }
