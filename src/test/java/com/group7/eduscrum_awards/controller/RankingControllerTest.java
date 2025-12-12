@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/** Unit tests for RankingController. */
 @WebMvcTest(RankingController.class)
 class RankingControllerTest {
 
@@ -45,7 +46,6 @@ class RankingControllerTest {
     void testGetStudentRankings() throws Exception {
         Long degreeId = 1L;
         RankingItemDTO item = new RankingItemDTO();
-        // item.setName("Student A"); item.setScore(100);
 
         when(rankingService.getStudentRanking(degreeId)).thenReturn(List.of(item));
 
