@@ -188,13 +188,13 @@ public class UserServiceImpl implements UserService {
     /**
      * Retrieves a user by their username.
      *
-     * @param username the username of the user to retrieve
+     * @param email the email of the user to retrieve
      * @return a {@link UserDTO} representing the found user
      * @throws EntityNotFoundException when no user with the given username exists
      */
     @Override
     @Transactional(readOnly = true)
-    public UserDTO getUserByUsername(String email) {
+    public UserDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new UserDTO(user);
