@@ -3,6 +3,8 @@ package com.group7.eduscrum_awards.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
+import com.group7.eduscrum_awards.dto.PasswordUpdateDTO;
+import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
 import com.group7.eduscrum_awards.dto.TeacherRegistrationDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
@@ -30,10 +32,14 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -169,5 +175,43 @@ class UserControllerTest {
                 .andExpect(jsonPath("$[0].name").value("Professor X"));
 
         verify(userService, times(1)).getAllTeachers();
+    }
+
+    @Test
+    @DisplayName("updateStudent | Should update student info")
+    @WithMockUser(roles = "ADMIN")
+    void testUpdateStudent() throws Exception {
+        Long id = 1L;
+        StudentUpdateDTO updateDTO = new StudentUpdateDTO();
+        updateDTO.setName("Updated Name");
+
+        UserDTO responseDTO = new UserDTO();
+        responseDTO.setName("Updated Name");
+
+        when(userService.updateStudent(eq(id), any(StudentUpdateDTO.class))).thenReturn(responseDTO);
+
+        mockMvc.perform(put("/api/v1/users/students/{id}", id)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Name"));
+    }
+
+    @Test
+    @DisplayName("updatePassword | Should return 204 No Content")
+    @WithMockUser(roles = "ADMIN")
+    void testUpdatePassword() throws Exception {
+        Long id = 1L;
+        PasswordUpdateDTO passDTO = new PasswordUpdateDTO();
+        passDTO.setNewPassword("newSecret123");
+
+        doNothing().when(userService).updatePassword(eq(id), anyString());
+
+        mockMvc.perform(patch("/api/v1/users/{id}/password", id) 
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(passDTO)))
+                .andExpect(status().isNoContent()); // 204
     }
 }
