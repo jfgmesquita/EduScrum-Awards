@@ -5,6 +5,9 @@ import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
 import com.group7.eduscrum_awards.service.TeamService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,5 +62,17 @@ public class TeamController {
         TeamDTO updatedTeam = teamService.addMemberToTeam(teamId, createDTO);
         // Return the updated team and a 200 OK status
         return new ResponseEntity<>(updatedTeam, HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint to retrieve all Teams associated with a specific Project.
+     * Accessible via: GET /api/v1/projects/{projectId}/teams
+     *
+     * @param projectId The ID of the Project.
+     * @return A ResponseEntity containing a list of TeamDTOs and HTTP status 200.
+     */
+    @GetMapping("/projects/{projectId}/teams")
+    public ResponseEntity<List<TeamDTO>> getTeamsByProject(@PathVariable Long projectId) {
+        return ResponseEntity.ok(teamService.getTeamsByProject(projectId));
     }
 }
