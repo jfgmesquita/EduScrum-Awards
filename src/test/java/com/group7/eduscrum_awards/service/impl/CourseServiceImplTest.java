@@ -314,7 +314,7 @@ class CourseServiceImplTest {
     @Test
     @DisplayName("getStudentsInCourse | Should return list of students")
     void testGetStudentsInCourse() {
-        // Arrange
+
         Long courseId = 1L;
         Course course = new Course();
         Student s1 = new Student("S1", "s1@test.com", "pass");
@@ -326,5 +326,42 @@ class CourseServiceImplTest {
 
         assertEquals(1, result.size());
         assertEquals("S1", result.get(0).getName());
+    }
+
+    // Tests for custom repository methods
+
+    @Test
+    @DisplayName("getCoursesByDegree | Should return list of courses for a degree")
+    void testGetCoursesByDegree() {
+        Long degreeId = 1L;
+        List<Course> courses = Arrays.asList(existingCourse, otherCourse);
+
+        when(courseRepository.findByDegreeId(degreeId)).thenReturn(courses);
+
+        List<CourseDTO> result = courseService.getCoursesByDegree(degreeId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(existingCourse.getName(), result.get(0).getName());
+        assertEquals(otherCourse.getName(), result.get(1).getName());
+        
+        verify(courseRepository, times(1)).findByDegreeId(degreeId);
+    }
+
+    @Test
+    @DisplayName("getCoursesByTeacher | Should return list of courses taught by teacher")
+    void testGetCoursesByTeacher() {
+        Long teacherId = 3L;
+        List<Course> courses = Arrays.asList(existingCourse);
+
+        when(courseRepository.findCoursesByTeacherId(teacherId)).thenReturn(courses);
+
+        List<CourseDTO> result = courseService.getCoursesByTeacher(teacherId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(existingCourse.getName(), result.get(0).getName());
+        
+        verify(courseRepository, times(1)).findCoursesByTeacherId(teacherId);
     }
 }
