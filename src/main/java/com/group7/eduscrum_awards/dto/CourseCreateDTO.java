@@ -13,8 +13,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CourseCreateDTO {
-
-    /** The name of the course. */
     @NotBlank(message = "The course name cannot be blank.")
     @Size(min = 3, max = 100, message = "The name must be between 3 and 100 characters.")
     private String name;
