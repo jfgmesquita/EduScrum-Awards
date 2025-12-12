@@ -2,6 +2,8 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
+import com.group7.eduscrum_awards.dto.CourseUpdateDTO;
+import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
@@ -31,8 +33,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Unit tests for the CourseServiceImpl.
@@ -283,5 +287,44 @@ class CourseServiceImplTest {
         assertEquals(existingCourse.getName(), result.get(0).getName()); // Validates mapping
         
         verify(courseRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("updateCourse | Should update name only")
+    void testUpdateCourse() {
+
+        Long courseId = 1L;
+        Course course = new Course("Old Name");
+ 
+        Degree originalDegree = new Degree("Software Engineering");
+        originalDegree.setId(99L);
+        course.setDegree(originalDegree);
+        
+        CourseUpdateDTO dto = new CourseUpdateDTO();
+        dto.setName("New Name");
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+        when(courseRepository.save(any(Course.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        CourseDTO result = courseService.updateCourse(courseId, dto);
+
+        assertEquals("New Name", result.getName());
+    }
+
+    @Test
+    @DisplayName("getStudentsInCourse | Should return list of students")
+    void testGetStudentsInCourse() {
+        // Arrange
+        Long courseId = 1L;
+        Course course = new Course();
+        Student s1 = new Student("S1", "s1@test.com", "pass");
+        course.setStudents(new HashSet<>(Set.of(s1)));
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+
+        List<UserDTO> result = courseService.getStudentsInCourse(courseId);
+
+        assertEquals(1, result.size());
+        assertEquals("S1", result.get(0).getName());
     }
 }
