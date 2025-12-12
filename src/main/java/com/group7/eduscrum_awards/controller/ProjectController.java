@@ -66,7 +66,7 @@ public class ProjectController {
 
         // Check who is the logged-in user
         String loggedUsername = principal.getName();
-        UserDTO loggedUser = userService.getUserByUsername(loggedUsername);
+        UserDTO loggedUser = userService.getUserByEmail(loggedUsername);
         
         // Validate if the logged-in user is the owner of the data
         boolean isOwner = loggedUser.getId().equals(studentId);
