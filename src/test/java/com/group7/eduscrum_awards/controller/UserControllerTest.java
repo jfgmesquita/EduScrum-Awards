@@ -43,9 +43,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Unit tests for UserController.
- */
+/** Unit tests for UserController. */
 @WebMvcTest(UserController.class)
 class UserControllerTest {
 
@@ -94,6 +92,52 @@ class UserControllerTest {
         createdUserDTO.setName("Prof Test");
         createdUserDTO.setEmail("prof@test.com");
         createdUserDTO.setRole(Role.TEACHER);
+    }
+
+    @Test
+    @DisplayName("registerUser | Should register a generic user and return 201 Created")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testRegisterUser_Success() throws Exception {
+        UserCreateDTO createDTO = new UserCreateDTO();
+        createDTO.setName("New Student");
+        createDTO.setEmail("newstudent@test.com");
+        createDTO.setPassword("password123");
+        createDTO.setRole(Role.STUDENT);
+
+        UserDTO responseDTO = new UserDTO();
+        responseDTO.setId(5L);
+        responseDTO.setName("New Student");
+        responseDTO.setEmail("newstudent@test.com");
+        responseDTO.setRole(Role.STUDENT);
+
+        when(userService.registerUser(any(UserCreateDTO.class))).thenReturn(responseDTO);
+
+        mockMvc.perform(post("/api/v1/users")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createDTO)))
+                .andExpect(status().isCreated()) // Expect 201
+                .andExpect(jsonPath("$.id").value(5L))
+                .andExpect(jsonPath("$.name").value("New Student"))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
+        
+        verify(userService, times(1)).registerUser(any(UserCreateDTO.class));
+    }
+
+    @Test
+    @DisplayName("registerUser | Should return 400 Bad Request when input is invalid")
+    @WithMockUser(username = "admin", roles = {"ADMIN"})
+    void testRegisterUser_Invalid() throws Exception {
+        UserCreateDTO invalidDTO = new UserCreateDTO();
+        invalidDTO.setName("");
+
+        mockMvc.perform(post("/api/v1/users")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidDTO)))
+                .andExpect(status().isBadRequest());
+        
+        verify(userService, never()).registerUser(any());
     }
 
     @Test
