@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.service.impl;
 import com.group7.eduscrum_awards.dto.AwardAssignmentRequestDTO;
 import com.group7.eduscrum_awards.dto.AwardCreateDTO;
 import com.group7.eduscrum_awards.dto.AwardDTO;
+import com.group7.eduscrum_awards.dto.StudentAwardDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.*;
 import com.group7.eduscrum_awards.model.enums.AwardScope;
@@ -230,5 +231,23 @@ class AwardServiceImplTest {
         assertEquals(2, result.size());
         verify(awardRepository).findAllByCourseIsNull();
         verify(awardRepository).findAllByCourse(course);
+    }
+
+    // Tests for getStudentAwards
+    @Test
+    @DisplayName("getStudentAwards | Should return awards assigned to Student")
+    void testGetStudentAwards_Success() {
+        when(userRepository.existsById(100L)).thenReturn(true);
+
+        AwardAssignment assignment1 = new AwardAssignment(globalAward, student, project, null);
+        AwardAssignment assignment2 = new AwardAssignment(customAward, student, project, null);
+
+        when(assignmentRepository.findAllByStudentIdOrderByAssignedAtDesc(100L))
+            .thenReturn(List.of(assignment1, assignment2));
+
+        List<StudentAwardDTO> result = awardService.getStudentAwards(100L);
+
+        assertEquals(2, result.size());
+        verify(assignmentRepository).findAllByStudentIdOrderByAssignedAtDesc(100L);
     }
 }
