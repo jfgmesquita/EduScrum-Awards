@@ -43,8 +43,8 @@ public class SecurityConfig {
             
             .authorizeHttpRequests(authz -> authz
                 
-                // PUBLIC ENDPOINTS - Allow login and registration
-                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // Login & auth endpoints
+                // PUBLIC ENDPOINTS - Allow login
+                .requestMatchers(HttpMethod.POST, "/api/v1/auth/**").permitAll() // Login/auth endpoints
 
                 // TEACHER-ONLY ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/api/v1/courses/{courseId}/projects").hasRole(Role.TEACHER.name())
