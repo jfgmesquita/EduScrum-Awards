@@ -1,16 +1,23 @@
 package com.group7.eduscrum_awards.service.impl;
 
+import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
+import com.group7.eduscrum_awards.model.Sprint;
 import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
+import com.group7.eduscrum_awards.model.User;
+import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.model.Student;
+import com.group7.eduscrum_awards.model.Task;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
+import com.group7.eduscrum_awards.repository.SprintRepository;
+import com.group7.eduscrum_awards.repository.TaskRepository;
 import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
 import com.group7.eduscrum_awards.service.TeamService;
@@ -33,13 +40,19 @@ public class TeamServiceImpl implements TeamService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final SprintRepository sprintRepository;
+    private final TaskRepository taskRepository;
 
     @Autowired
-    public TeamServiceImpl(TeamRepository teamRepository, ProjectRepository projectRepository, UserRepository userRepository, TeamMemberRepository teamMemberRepository) {
+    public TeamServiceImpl(TeamRepository teamRepository, ProjectRepository projectRepository, 
+        UserRepository userRepository, TeamMemberRepository teamMemberRepository,
+        SprintRepository sprintRepository, TaskRepository taskRepository) {
         this.teamRepository = teamRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.teamMemberRepository = teamMemberRepository;
+        this.sprintRepository = sprintRepository;
+        this.taskRepository = taskRepository;
     }
 
     /**
@@ -145,6 +158,53 @@ public class TeamServiceImpl implements TeamService {
     public List<TeamDTO> getTeamsByCourse(Long courseId) {
         return teamRepository.findTeamsByCourseId(courseId).stream()
                 .map(TeamDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all developers (TeamMembers with DEVELOPER role) from the current user's team,
+     * given a context of a Sprint or a Task.
+     *
+     * @param sprintId Optional Sprint ID.
+     * @param taskId Optional Task ID.
+     * @param userEmail The email of the currently logged-in user.
+     * @return A list of DeveloperDTOs representing the developers in the user's team.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeveloperDTO> getDevelopersByContext(Long sprintId, Long taskId, String userEmail) {
+        if (sprintId == null && taskId == null) {
+            throw new IllegalArgumentException("Either sprintId or taskId must be provided.");
+        }
+
+        Project project;
+        if (sprintId != null) {
+            Sprint sprint = sprintRepository.findById(sprintId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Sprint not found with id: " + sprintId));
+            project = sprint.getProject();
+        } else {
+            Task task = taskRepository.findById(taskId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+            project = task.getSprint().getProject();
+        }
+
+        User currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));
+
+        if (!(currentUser instanceof Student)) {
+             throw new IllegalArgumentException("Only Students belong to a specific Team context.");
+        }
+
+        Student currentStudent = (Student) currentUser;
+        
+        TeamMember myMembership = teamMemberRepository.findByStudentAndProject(currentStudent, project)
+                .orElseThrow(() -> new ResourceNotFoundException("You are not part of any team in this project."));
+        
+        Team myTeam = myMembership.getTeam();
+
+        return myTeam.getMembers().stream()
+                .filter(m -> m.getTeamRole() == TeamRole.DEVELOPER)
+                .map(DeveloperDTO::new)
                 .collect(Collectors.toList());
     }
 }
