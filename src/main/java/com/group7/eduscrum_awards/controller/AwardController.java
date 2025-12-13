@@ -70,7 +70,7 @@ public class AwardController {
     public ResponseEntity<List<StudentAwardDTO>> getStudentAwards(
             @PathVariable Long studentId) {
         
-        List<com.group7.eduscrum_awards.dto.StudentAwardDTO> awards = awardService.getStudentAwards(studentId);
+        List<StudentAwardDTO> awards = awardService.getStudentAwards(studentId);
         return ResponseEntity.ok(awards);
     }
 }
