@@ -221,6 +221,7 @@ public class CourseServiceImpl implements CourseService {
      * 
      * @param studentId The ID of the student.
      * @return A list of {@link CourseDTO} representing the courses the student is enrolled in.
+     * @throws ResourceNotFoundException if the student is not found.
      */
     @Override
     @Transactional(readOnly = true)
