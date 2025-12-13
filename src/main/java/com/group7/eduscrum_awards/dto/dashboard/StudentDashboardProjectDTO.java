@@ -31,6 +31,7 @@ public class StudentDashboardProjectDTO {
         this.myRole = role.name();
         this.myTeamName = teamName;
         this.sprints = project.getSprints().stream()
+                .sorted(java.util.Comparator.comparing(sprint -> sprint.getSprintNumber()))
                 .map(DashboardSprintDTO::new)
                 .collect(Collectors.toList());
     }
