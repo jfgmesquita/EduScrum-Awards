@@ -4,7 +4,9 @@ import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
+import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.service.ProjectService;
 import com.group7.eduscrum_awards.service.UserService;
 
@@ -101,5 +103,65 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(projectService.getStudentDashboard(studentId));
+    }
+
+    /**
+     * Endpoint to retrieve all projects created by a specific teacher.
+     * Accessible via: GET /api/v1/teachers/{teacherId}/projects
+     *
+     * @param teacherId The ID of the teacher (from the URL path).
+     * @param principal The security principal (to verify identity).
+     * @return A ResponseEntity containing a list of ProjectSummaryDTOs.
+     */
+    @GetMapping("/teachers/{teacherId}/projects")
+    public ResponseEntity<List<ProjectSummaryDTO>> getProjectsByTeacher(
+            @PathVariable Long teacherId,
+            Principal principal) {
+        
+        // IDOR Check: Ensure logged user matches the requested teacherId
+        String email = principal.getName();
+        UserDTO user = userService.getUserByEmail(email);
+        
+        if (!user.getId().equals(teacherId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        return ResponseEntity.ok(projectService.getProjectsByTeacher(teacherId));
+    }
+
+    /**
+     * Endpoint to retrieve all projects within a specific course.
+     * Accessible via: GET /api/v1/courses/{courseId}/projects
+     *
+     * @param courseId The ID of the course (from the URL path).
+     * @return A ResponseEntity containing a list of ProjectSummaryDTOs.
+     */
+    @GetMapping("/courses/{courseId}/projects")
+    public ResponseEntity<List<ProjectSummaryDTO>> getProjectsByCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(projectService.getProjectsSummary(courseId));
+    }
+
+    /**
+     * Endpoint to get the count of projects within a specific course.
+     * Accessible via: GET /api/v1/courses/{courseId}/projects/count
+     *
+     * @param courseId The ID of the course (from the URL path).
+     * @return A ResponseEntity containing the count of projects.
+     */
+    @GetMapping("/courses/{courseId}/projects/count")
+    public ResponseEntity<Long> getProjectCount(@PathVariable Long courseId) {
+        return ResponseEntity.ok(projectService.countProjectsInCourse(courseId));
+    }
+
+    /**
+     * Endpoint to retrieve detailed information about a specific project for teachers.
+     * Accessible via: GET /api/v1/projects/{projectId}/details
+     *
+     * @param projectId The ID of the project (from the URL path).
+     * @return A ResponseEntity containing TeacherProjectDetailsDTO.
+     */
+    @GetMapping("/projects/{projectId}/details")
+    public ResponseEntity<TeacherProjectDetailsDTO> getProjectDetails(@PathVariable Long projectId) {
+        return ResponseEntity.ok(projectService.getProjectDetails(projectId));
     }
 }
