@@ -136,6 +136,7 @@ public class ProjectServiceImpl implements ProjectService {
                     member.getTeam().getName()
                 );
             })
+            .sorted(java.util.Comparator.comparing(dto -> dto.getProjectName()))
             .collect(Collectors.toList());
     }
 }
