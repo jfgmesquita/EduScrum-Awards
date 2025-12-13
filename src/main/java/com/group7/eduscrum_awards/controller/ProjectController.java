@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.controller;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.service.ProjectService;
 import com.group7.eduscrum_awards.service.UserService;
@@ -76,5 +77,29 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(projectService.getMyProjects(studentId));
+    }
+
+    /**
+     * Endpoint for the Student Dashboard.
+     * Returns all projects, roles, sprints, and tasks for the logged-in student.
+     * Accessible via: GET /api/v1/students/{studentId}/dashboard
+     *
+     * @param studentId The ID of the student.
+     * @param principal The security principal (to verify identity).
+     * @return List of detailed project info.
+     */
+    @GetMapping("/students/{studentId}/dashboard")
+    public ResponseEntity<List<StudentDashboardProjectDTO>> getStudentDashboard(@PathVariable Long studentId,
+            Principal principal) {
+
+        // Security Check: IDOR Protection
+        String loggedUsername = principal.getName();
+        UserDTO loggedUser = userService.getUserByEmail(loggedUsername);
+
+        if (!loggedUser.getId().equals(studentId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        return ResponseEntity.ok(projectService.getStudentDashboard(studentId));
     }
 }

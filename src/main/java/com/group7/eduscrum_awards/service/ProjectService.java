@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -44,4 +45,13 @@ public interface ProjectService {
      * @return A list of ProjectSummaryDTOs representing the projects and their team counts.
      */
     public List<ProjectSummaryDTO> getProjectsSummary(Long courseId);
+
+    /**
+     * Retrieves all projects for a specific student, including their role,
+     * team name, and all associated sprints and tasks.
+     *
+     * @param studentId The ID of the student.
+     * @return List of dashboard DTOs.
+     */
+    List<StudentDashboardProjectDTO> getStudentDashboard(Long studentId);
 }

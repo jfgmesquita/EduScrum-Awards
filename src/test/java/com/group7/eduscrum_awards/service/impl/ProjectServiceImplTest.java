@@ -11,9 +11,13 @@ import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Sprint;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Task;
+import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
+import com.group7.eduscrum_awards.model.enums.TaskStatus;
+import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
+import com.group7.eduscrum_awards.repository.TeamMemberRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -54,8 +58,12 @@ class ProjectServiceImplTest {
     @Mock 
     private UserRepository userRepository;
 
+    @Mock
+    private TeamMemberRepository teamMemberRepository;
+
     @InjectMocks
     private ProjectServiceImpl projectService;
+
     
     private Course existingCourse;
     private ProjectCreateDTO createDTO;
@@ -230,5 +238,51 @@ class ProjectServiceImplTest {
         assertEquals(1, result.size());
         assertEquals(5L, result.get(0).getNumberOfTeams());
         verify(projectRepository).findProjectsWithTeamCount(courseId);
+    }
+
+    @Test
+    @DisplayName("getStudentDashboard | Should return detailed project data with task assignee name")
+    void testGetStudentDashboard() {
+        Long studentId = 1L;
+        
+        Student student = new Student("Test Student", "student@test.com", "pass");
+        student.setId(studentId);
+        
+        Project project = new Project("Capstone Project", "Description", existingCourse, LocalDate.now(), LocalDate.now().plusMonths(1));
+        project.setId(10L);
+        
+        Team team = new Team("Alpha Team", 1, project);
+        
+        TeamMember membership = new TeamMember();
+        membership.setId(50L);
+        membership.setStudent(student);
+        membership.setTeam(team);
+        membership.setTeamRole(TeamRole.SCRUM_MASTER);
+
+        Task task = new Task("Setup DB", null);
+        task.setId(101L);
+        task.setStatus(TaskStatus.DOING);
+        task.setTeamMember(membership);
+
+        Sprint sprint = new Sprint();
+        sprint.setId(100L);
+        sprint.setTasks(new java.util.HashSet<>(java.util.Set.of(task))); 
+        project.addSprint(sprint);
+        
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
+        when(teamMemberRepository.findByStudentId(studentId)).thenReturn(List.of(membership));
+
+        var result = projectService.getStudentDashboard(studentId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Capstone Project", result.get(0).getProjectName());
+        
+        assertEquals(1, result.get(0).getSprints().size());
+        var dashboardTask = result.get(0).getSprints().get(0).getTasks().get(0);
+        
+        assertEquals(101L, dashboardTask.getId());
+        assertEquals(50L, dashboardTask.getAssignedMemberId());
+        assertEquals("Test Student", dashboardTask.getAssignedMemberName()); // Validate the new field
     }
 }

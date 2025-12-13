@@ -5,6 +5,7 @@ import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
@@ -158,5 +159,44 @@ class ProjectControllerTest {
         mockMvc.perform(get("/api/v1/students/{studentId}/projects", studentId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("getStudentDashboard | Should return 200 OK with data")
+    @WithMockUser(username = "student@test.com", roles = "STUDENT")
+    void testGetStudentDashboard() throws Exception {
+        Long studentId = 5L;
+
+        UserDTO mockUser = new UserDTO();
+        mockUser.setId(studentId);
+        when(userService.getUserByEmail("student@test.com")).thenReturn(mockUser);
+
+        StudentDashboardProjectDTO dashboardDTO = new StudentDashboardProjectDTO();
+        dashboardDTO.setProjectName("Dashboard Project");
+        dashboardDTO.setMyRole("DEVELOPER");
+        
+        when(projectService.getStudentDashboard(studentId)).thenReturn(List.of(dashboardDTO));
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", studentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].projectName").value("Dashboard Project"))
+                .andExpect(jsonPath("$[0].myRole").value("DEVELOPER"));
+    }
+
+    @Test
+    @DisplayName("getStudentDashboard | Should return 403 Forbidden on IDOR attempt")
+    @WithMockUser(username = "hacker@test.com", roles = "STUDENT")
+    void testGetStudentDashboard_Forbidden() throws Exception {
+        Long targetId = 5L;
+        Long hackerId = 99L;
+
+        UserDTO hackerUser = new UserDTO();
+        hackerUser.setId(hackerId);
+        when(userService.getUserByEmail("hacker@test.com")).thenReturn(hackerUser);
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", targetId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 }

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /** DTO for sending Student Award data to the client. */
 @NoArgsConstructor
@@ -16,7 +16,7 @@ public class StudentAwardDTO {
     private String awardDescription;
     private int points;
     private String badgeIcon;
-    private LocalDateTime assignedAt;
+    private LocalDate assignedAt;
     private String projectName;
 
     public StudentAwardDTO(AwardAssignment assignment) {

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /**
  * Represents an instance of an award given to a student.
@@ -23,7 +23,7 @@ public class AwardAssignment {
     private Long id;
 
     @Column(nullable = false)
-    private LocalDateTime assignedAt;
+    private LocalDate assignedAt;
 
     /** The award definition that was earned. */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -56,7 +56,7 @@ public class AwardAssignment {
         this.student = student;
         this.project = project;
         this.team = team;
-        this.assignedAt = LocalDateTime.now();
+        this.assignedAt = LocalDate.now();
     }
 
     /**
