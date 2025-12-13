@@ -14,7 +14,7 @@ public interface RankingService {
     /**
      * Gets the student ranking for a specific degree.
      * 
-     * @param degreeId
+     * @param degreeId the ID of the degree
      * @return List of RankingItemDTO representing student rankings.
      */
     List<RankingItemDTO> getStudentRanking(Long degreeId);
@@ -22,7 +22,7 @@ public interface RankingService {
     /**
      * Gets the team ranking for a specific course.
      * 
-     * @param courseId
+     * @param courseId the ID of the course
      * @return List of RankingItemDTO representing team rankings.
      */
     List<RankingItemDTO> getTeamRanking(Long courseId);
@@ -30,7 +30,7 @@ public interface RankingService {
     /**
      * Gets the dashboard rankings for a specific student.
      * 
-     * @param studentId
+     * @param studentId the ID of the student
      * @return StudentDashboardRankingDTO containing individual and team rankings.
      */
     StudentDashboardRankingDTO getStudentDashboardRankings(Long studentId);
