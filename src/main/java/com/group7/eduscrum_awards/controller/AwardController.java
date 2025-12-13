@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.controller;
 import com.group7.eduscrum_awards.dto.AwardAssignmentRequestDTO;
 import com.group7.eduscrum_awards.dto.AwardCreateDTO;
 import com.group7.eduscrum_awards.dto.AwardDTO;
+import com.group7.eduscrum_awards.dto.StudentAwardDTO;
 import com.group7.eduscrum_awards.service.AwardService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,7 @@ public class AwardController {
      * Accessible via: GET /api/v1/students/{studentId}/awards
      */
     @GetMapping("/students/{studentId}/awards")
-    public ResponseEntity<List<com.group7.eduscrum_awards.dto.StudentAwardDTO>> getStudentAwards(
+    public ResponseEntity<List<StudentAwardDTO>> getStudentAwards(
             @PathVariable Long studentId) {
         
         List<com.group7.eduscrum_awards.dto.StudentAwardDTO> awards = awardService.getStudentAwards(studentId);
