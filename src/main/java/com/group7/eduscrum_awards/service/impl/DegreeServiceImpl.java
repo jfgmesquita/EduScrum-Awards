@@ -142,4 +142,19 @@ public class DegreeServiceImpl implements DegreeService {
         }
         return new DegreeDTO(degreeRepository.save(degree));
     }
+
+    /**
+     * Retrieves a degree by its ID.
+     *
+     * @param id the ID of the degree to retrieve
+     * @return a {@link DegreeDTO} representing the retrieved degree
+     * @throws ResourceNotFoundException when no degree with the given ID exists
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public DegreeDTO getDegreeById(Long id) {
+        Degree degree = degreeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Degree not found: " + id));
+        return new DegreeDTO(degree);
+    }
 }
