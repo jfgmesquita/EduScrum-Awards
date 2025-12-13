@@ -22,6 +22,93 @@ import org.springframework.stereotype.Repository;
 public interface AwardAssignmentRepository extends JpaRepository<AwardAssignment, Long> {
 
     /**
+     * (1) Finds student rankings by degree ID, including students with 0 points.
+     * 
+     * @param degreeId the ID of the degree
+     * @return list of StudentScoreSummary projections
+     */
+    @Query("SELECT s.id as studentId, s.name as studentName, COALESCE(SUM(a.points), 0) as totalScore " +
+           "FROM Student s " +
+           "LEFT JOIN s.awardAssignments aa " +
+           "LEFT JOIN aa.award a " +
+           "WHERE s.degree.id = :degreeId " + 
+           "GROUP BY s.id, s.name " +
+           "ORDER BY totalScore DESC")
+    List<StudentScoreSummary> findStudentRankingsByDegreeId(@Param("degreeId") Long degreeId);
+
+
+    /**
+     * (2) Finds team rankings by course ID, including teams with 0 points.
+     * 
+     * @param courseId the ID of the course
+     * @return list of TeamScoreSummary projections
+     */
+    @Query("SELECT t.id as teamId, t.name as teamName, COALESCE(SUM(a.points), 0) as totalScore " +
+           "FROM Team t " +
+           "JOIN t.project p " +
+           "JOIN p.course c " +
+           "LEFT JOIN t.members m " +
+           "LEFT JOIN AwardAssignment aa ON aa.team = t " +
+           "LEFT JOIN aa.award a " +
+           "WHERE c.id = :courseId " +
+           "GROUP BY t.id, t.name " +
+           "ORDER BY totalScore DESC")
+    List<TeamScoreSummary> findTeamRankingsByCourseId(@Param("courseId") Long courseId);
+
+
+    /**
+     * (3) Finds team member scores by team ID, including members with 0 points.
+     * 
+     * @param teamId the ID of the team
+     * @return list of StudentScoreSummary projections
+     */
+    @Query("SELECT s.id as studentId, s.name as studentName, COALESCE(SUM(a.points), 0) as totalScore " +
+           "FROM TeamMember tm " +
+           "JOIN tm.student s " +
+           "LEFT JOIN AwardAssignment aa ON aa.student = s AND aa.team.id = :teamId " + // Prémios ganhos NESTA equipa
+           "LEFT JOIN aa.award a " +
+           "WHERE tm.team.id = :teamId " +
+           "GROUP BY s.id, s.name " +
+           "ORDER BY totalScore DESC")
+    List<StudentScoreSummary> findTeamMemberScores(@Param("teamId") Long teamId);
+
+    /**
+    * Finds all AwardAssignments for a given student, ordered by assignment date descending.
+    * 
+    * @param studentId the ID of the student
+    * @return list of AwardAssignments for the student
+    */
+    List<AwardAssignment> findAllByStudentIdOrderByAssignedAtDesc(Long studentId);
+
+    /**
+     * Finds global student rankings based on total award points.
+     * 
+     * @return list of StudentScoreSummary projections
+     */
+    @Query("SELECT s.id as studentId, s.name as studentName, COALESCE(SUM(a.points), 0) as totalScore " +
+        "FROM AwardAssignment aa " +
+        "JOIN aa.student s " +
+        "JOIN aa.award a " +
+        "GROUP BY s.id, s.name " +
+        "ORDER BY totalScore DESC")
+    List<StudentScoreSummary> findGlobalStudentRankings();
+
+    /**
+     * Finds student scores within a specific team based on total award points.
+     * 
+     * @param teamId the ID of the team
+     * @return list of StudentScoreSummary projections
+     */
+    @Query("SELECT s.id as studentId, s.name as studentName, COALESCE(SUM(a.points), 0) as totalScore " +
+           "FROM AwardAssignment aa " +
+           "JOIN aa.student s " +
+           "JOIN aa.award a " +
+           "WHERE aa.team.id = :teamId " +
+           "GROUP BY s.id, s.name " +
+           "ORDER BY totalScore DESC")
+    List<StudentScoreSummary> findStudentScoresByTeamId(@Param("teamId") Long teamId);
+
+    /**
     * Individual Student Ranking (By Degree).
     * Sums only the points where 'student' is not null (individual awards).
     */
@@ -52,57 +139,4 @@ public interface AwardAssignmentRepository extends JpaRepository<AwardAssignment
                     "GROUP BY t.id, t.name " +
                     "ORDER BY 2 DESC")
     List<RankingItemDTO> findTeamRankingByCourse(@Param("courseId") Long courseId);
-
-    /**
-    * Finds all AwardAssignments for a given student, ordered by assignment date descending.
-    * 
-    * @param studentId the ID of the student
-    * @return list of AwardAssignments for the student
-    */
-    List<AwardAssignment> findAllByStudentIdOrderByAssignedAtDesc(Long studentId);
-
-    /**
-     * Finds global student rankings based on total award points.
-     * 
-     * @return list of StudentScoreSummary projections
-     */
-    @Query("SELECT s.id as studentId, s.name as studentName, COALESCE(SUM(a.points), 0) as totalScore " +
-        "FROM AwardAssignment aa " +
-        "JOIN aa.student s " +
-        "JOIN aa.award a " +
-        "GROUP BY s.id, s.name " +
-        "ORDER BY totalScore DESC")
-    List<StudentScoreSummary> findGlobalStudentRankings();
-
-    /**
-     * Finds team rankings within a specific course based on total award points.
-     * 
-     * @param courseId the ID of the course
-     * @return list of TeamScoreSummary projections
-     */
-    @Query("SELECT t.id as teamId, t.name as teamName, COALESCE(SUM(a.points), 0) as totalScore " +
-           "FROM AwardAssignment aa " +
-           "JOIN aa.team t " +
-           "JOIN aa.award a " +
-           "JOIN t.project p " +
-           "JOIN p.course c " +
-           "WHERE c.id = :courseId " +
-           "GROUP BY t.id, t.name " +
-           "ORDER BY totalScore DESC")
-    List<TeamScoreSummary> findTeamRankingsByCourseId(@Param("courseId") Long courseId);
-
-    /**
-     * Finds student scores within a specific team based on total award points.
-     * 
-     * @param teamId the ID of the team
-     * @return list of StudentScoreSummary projections
-     */
-    @Query("SELECT s.id as studentId, s.name as studentName, COALESCE(SUM(a.points), 0) as totalScore " +
-           "FROM AwardAssignment aa " +
-           "JOIN aa.student s " +
-           "JOIN aa.award a " +
-           "WHERE aa.team.id = :teamId " +
-           "GROUP BY s.id, s.name " +
-           "ORDER BY totalScore DESC")
-    List<StudentScoreSummary> findStudentScoresByTeamId(@Param("teamId") Long teamId);
 }
