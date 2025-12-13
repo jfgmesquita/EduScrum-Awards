@@ -75,6 +75,32 @@ class CourseControllerTest {
     }
 
     @Test
+    @DisplayName("getCourseById | Should return course")
+    @WithMockUser
+    void testGetCourseById() throws Exception {
+        Long id = 10L;
+        CourseDTO dto = new CourseDTO(); dto.setId(id); dto.setName("Java");
+
+        when(courseService.getCourseById(id)).thenReturn(dto);
+
+        mockMvc.perform(get("/api/v1/courses/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Java"));
+    }
+
+    @Test
+    @DisplayName("getCoursesByStudent | Should return list")
+    @WithMockUser
+    void testGetCoursesByStudent() throws Exception {
+        Long studentId = 5L;
+        when(courseService.getCoursesByStudent(studentId)).thenReturn(List.of(new CourseDTO()));
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/courses", studentId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1));
+    }   
+
+    @Test
     @DisplayName("Should return list of courses when authenticated")
     @WithMockUser(username = "admin", roles = {"ADMIN"})
     void testGetAllCourses_Success() throws Exception {
