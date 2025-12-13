@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.service;
 import com.group7.eduscrum_awards.dto.TaskAssignDTO;
 import com.group7.eduscrum_awards.dto.TaskCreateDTO;
 import com.group7.eduscrum_awards.dto.TaskDTO;
+import com.group7.eduscrum_awards.dto.TaskStatusDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
 /** Service Interface (Contract) for Task operations. */
@@ -34,4 +35,18 @@ public interface TaskService {
      * @throws IllegalArgumentException if the developer is not on a team for this project.
      */
     TaskDTO assignTask(Long taskId, TaskAssignDTO assignDTO);
+
+    /**
+     * Updates the status of a task.
+     * Logic:
+     * - Moving to DONE: Only Product Owner can do it.
+     * - Other moves Team members can do it.
+     *
+     * @param taskId The ID of the task.
+     * @param statusDTO The new status.
+     * @return The updated TaskDTO.
+     * @throws ResourceNotFoundException if the taskId does not exist.
+     * @throws AccessDeniedException if the user lacks permission to make the status change.
+     */
+    TaskDTO updateTaskStatus(Long taskId, TaskStatusDTO statusDTO);
 }
