@@ -7,6 +7,7 @@ import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
+import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.ProjectService;
 import com.group7.eduscrum_awards.service.UserService;
 
@@ -163,5 +164,32 @@ public class ProjectController {
     @GetMapping("/projects/{projectId}/details")
     public ResponseEntity<TeacherProjectDetailsDTO> getProjectDetails(@PathVariable Long projectId) {
         return ResponseEntity.ok(projectService.getProjectDetails(projectId));
+    }
+
+    /**
+     * Endpoint to retrieve a project by its ID.
+     * Accessible via: GET /api/v1/projects/{id}
+     *
+     * @param id The ID of the project (from the URL path).
+     * @param principal The security principal (to verify identity).
+     * @return A ResponseEntity containing the ProjectDTO.
+     */
+    @GetMapping("/projects/{id}")
+    public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Long id, Principal principal) {
+        
+        // Fetch user info for Security Check
+        String email = principal.getName();
+        UserDTO user = userService.getUserByEmail(email);
+
+        // IDOR Protection (Teacher Context)
+        // If the user is a TEACHER, verify they teach the course of this project
+        if (user.getRole() == Role.TEACHER) {
+            boolean isAllowed = projectService.isTeacherAllowedInProject(id, user.getId());
+            if (!isAllowed) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+        }
+
+        return ResponseEntity.ok(projectService.getProjectById(id));
     }
 }
