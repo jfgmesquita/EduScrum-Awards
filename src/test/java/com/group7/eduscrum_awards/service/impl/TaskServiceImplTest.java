@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.TaskCreateDTO;
 import com.group7.eduscrum_awards.dto.TaskDTO;
+import com.group7.eduscrum_awards.dto.TaskStatusDTO;
 import com.group7.eduscrum_awards.dto.TaskAssignDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.*;
@@ -56,8 +57,10 @@ class TaskServiceImplTest {
     private Sprint existingSprint;
     private Student poStudent;
     private Student devStudent;
+    private Student smStudent;
     private TeamMember poMembership;
     private TeamMember devMembership;
+    private TeamMember smMembership;
     private TaskCreateDTO createDTO;
     private TaskAssignDTO assignDTO;
     private Task savedTask;
@@ -80,6 +83,10 @@ class TaskServiceImplTest {
         devStudent.setId(5L);
         devStudent.setRole(Role.STUDENT);
 
+        smStudent = new Student("SM User", "sm@test.com", "pass");
+        smStudent.setId(6L);
+        smStudent.setRole(Role.STUDENT);
+
         // Team Memberships
         poMembership = new TeamMember();
         poMembership.setStudent(poStudent);
@@ -92,6 +99,12 @@ class TaskServiceImplTest {
         devMembership.setStudent(devStudent);
         devMembership.setProject(existingProject);
         devMembership.setTeamRole(TeamRole.DEVELOPER);
+
+        // Scrum Master Membership
+        smMembership = new TeamMember();
+        smMembership.setStudent(smStudent);
+        smMembership.setProject(existingProject);
+        smMembership.setTeamRole(TeamRole.SCRUM_MASTER);
 
         // Task Creation DTO
         createDTO = new TaskCreateDTO();
@@ -179,13 +192,15 @@ class TaskServiceImplTest {
     // Tests for assignTask
 
     @Test
-    @DisplayName("assignTask | Should assign task successfully for Product Owner")
+    @DisplayName("assignTask | Should assign task successfully for Scrum Master")
     void testAssignTask_Success() {
-        mockSecurityContext(poStudent);
+        // Fix: Use Scrum Master instead of Product Owner
+        mockSecurityContext(smStudent);
 
         when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
         when(teamMemberRepository.findById(2L)).thenReturn(Optional.of(devMembership));
-        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject)).thenReturn(Optional.of(poMembership));
+        // Check finding the Scrum Master
+        when(teamMemberRepository.findByStudentAndProject(smStudent, existingProject)).thenReturn(Optional.of(smMembership));
         doReturn(savedTask).when(taskRepository).save(any(Task.class));
 
         TaskDTO result = taskService.assignTask(100L, assignDTO);
@@ -196,14 +211,14 @@ class TaskServiceImplTest {
         
         verify(taskRepository).findById(100L);
         verify(teamMemberRepository).findById(2L);
-        verify(teamMemberRepository).findByStudentAndProject(poStudent, existingProject);
+        verify(teamMemberRepository).findByStudentAndProject(smStudent, existingProject);
         verify(taskRepository).save(any(Task.class));
     }
 
     @Test
     @DisplayName("assignTask | Should throw ResourceNotFoundException when Task not found")
     void testAssignTask_Failure_TaskNotFound() {
-        mockSecurityContext(poStudent);
+        mockSecurityContext(smStudent);
         
         when(taskRepository.findById(100L)).thenReturn(Optional.empty());
 
@@ -218,7 +233,7 @@ class TaskServiceImplTest {
     @Test
     @DisplayName("assignTask | Should throw ResourceNotFoundException when Developer not found")
     void testAssignTask_Failure_DeveloperNotFound() {
-        mockSecurityContext(poStudent);
+        mockSecurityContext(smStudent);
 
         when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
         when(teamMemberRepository.findById(2L)).thenReturn(Optional.empty());
@@ -233,13 +248,13 @@ class TaskServiceImplTest {
     }
 
     @Test
-    @DisplayName("assignTask | Should throw AccessDeniedException when user is not Product Owner")
-    void testAssignTask_Failure_NotProductOwner() {
-        mockSecurityContext(devStudent); // Log in as Developer
+    @DisplayName("assignTask | Should throw AccessDeniedException when user is not Scrum Master")
+    void testAssignTask_Failure_NotScrumMaster() {
+        mockSecurityContext(devStudent); // Log in as Developer (Not SM)
 
         when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
         when(teamMemberRepository.findById(2L)).thenReturn(Optional.of(devMembership));
-        when(teamMemberRepository.findByStudentAndProject(devStudent, existingProject)).thenReturn(Optional.empty()); // Not the PO
+        when(teamMemberRepository.findByStudentAndProject(devStudent, existingProject)).thenReturn(Optional.empty()); // Not the SM
 
         assertThrows(AccessDeniedException.class, () -> {
             taskService.assignTask(100L, assignDTO);
@@ -251,14 +266,18 @@ class TaskServiceImplTest {
     @Test
     @DisplayName("assignTask | Should throw IllegalArgumentException when Developer is not a DEVELOPER")
     void testAssignTask_Failure_MemberNotDeveloper() {
-        mockSecurityContext(poStudent);
-        poMembership.setTeamRole(TeamRole.PRODUCT_OWNER); // Change target to be a PO
-
+        // Fix: Use Scrum Master to pass the security check
+        mockSecurityContext(smStudent);
+        
         when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
-        when(teamMemberRepository.findById(1L)).thenReturn(Optional.of(poMembership)); // Try to assign to the PO
-        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject)).thenReturn(Optional.of(poMembership));
+        
+        // Return PO membership when looking up the "developer" to trigger error
+        when(teamMemberRepository.findById(1L)).thenReturn(Optional.of(poMembership)); 
+        
+        // Return SM membership when authenticating
+        when(teamMemberRepository.findByStudentAndProject(smStudent, existingProject)).thenReturn(Optional.of(smMembership));
 
-        assignDTO.setTeamMemberId(1L); // Set DTO to assign to PO
+        assignDTO.setTeamMemberId(1L); // Set DTO to assign to someone who is NOT a developer (PO)
         
         assertThrows(IllegalArgumentException.class, () -> {
             taskService.assignTask(100L, assignDTO);
@@ -270,7 +289,8 @@ class TaskServiceImplTest {
     @Test
     @DisplayName("assignTask | Should throw IllegalArgumentException when Developer is on different project")
     void testAssignTask_Failure_DeveloperWrongProject() {
-        mockSecurityContext(poStudent);
+        // Fix: Use Scrum Master to pass the security check
+        mockSecurityContext(smStudent);
         
         Project otherProject = new Project();
         otherProject.setId(2L);
@@ -278,10 +298,99 @@ class TaskServiceImplTest {
 
         when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
         when(teamMemberRepository.findById(2L)).thenReturn(Optional.of(devMembership));
-        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject)).thenReturn(Optional.of(poMembership));
+        when(teamMemberRepository.findByStudentAndProject(smStudent, existingProject)).thenReturn(Optional.of(smMembership));
 
         assertThrows(IllegalArgumentException.class, () -> {
             taskService.assignTask(100L, assignDTO);
+        });
+
+        verify(taskRepository, never()).save(any());
+    }
+
+    // Tests for updateTaskStatus
+
+    @Test
+    @DisplayName("updateTaskStatus | Developer should update status to IN_PROGRESS successfully")
+    void testUpdateTaskStatus_Success_Developer() {
+
+        mockSecurityContext(devStudent);
+        
+        TaskStatusDTO statusDTO = new TaskStatusDTO();
+        statusDTO.setStatus(TaskStatus.DOING); 
+        
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findByStudentAndProject(devStudent, existingProject))
+            .thenReturn(Optional.of(devMembership));
+        
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            return t;
+        });
+
+        TaskDTO result = taskService.updateTaskStatus(100L, statusDTO);
+
+        assertNotNull(result);
+        assertEquals(TaskStatus.DOING, result.getStatus());
+        verify(taskRepository).save(any(Task.class));
+    }
+
+    @Test
+    @DisplayName("updateTaskStatus | Developer cannot mark task as DONE (Access Denied)")
+    void testUpdateTaskStatus_Failure_DeveloperCannotComplete() {
+        mockSecurityContext(devStudent);
+
+        TaskStatusDTO statusDTO = new TaskStatusDTO();
+        statusDTO.setStatus(TaskStatus.DONE);
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findByStudentAndProject(devStudent, existingProject))
+            .thenReturn(Optional.of(devMembership)); // Role is DEVELOPER
+
+        AccessDeniedException exception = assertThrows(AccessDeniedException.class, () -> {
+            taskService.updateTaskStatus(100L, statusDTO);
+        });
+
+        assertEquals("Only the Product Owner can mark a task as DONE (Review passed).", exception.getMessage());
+        verify(taskRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateTaskStatus | Product Owner can mark task as DONE")
+    void testUpdateTaskStatus_Success_ProductOwner() {
+        mockSecurityContext(poStudent);
+
+        TaskStatusDTO statusDTO = new TaskStatusDTO();
+        statusDTO.setStatus(TaskStatus.DONE);
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findByStudentAndProject(poStudent, existingProject))
+            .thenReturn(Optional.of(poMembership)); // Role is PRODUCT_OWNER
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskDTO result = taskService.updateTaskStatus(100L, statusDTO);
+
+        assertEquals(TaskStatus.DONE, result.getStatus());
+        verify(taskRepository).save(savedTask);
+    }
+
+    @Test
+    @DisplayName("updateTaskStatus | Should throw exception if User is not in Project")
+    void testUpdateTaskStatus_Failure_UserNotInProject() {
+        Student randomStudent = new Student("Random", "rnd@test.com", "pass");
+        randomStudent.setId(99L);
+        randomStudent.setRole(Role.STUDENT);
+        mockSecurityContext(randomStudent);
+
+        TaskStatusDTO statusDTO = new TaskStatusDTO();
+        statusDTO.setStatus(TaskStatus.DOING);
+
+        when(taskRepository.findById(100L)).thenReturn(Optional.of(savedTask));
+        when(teamMemberRepository.findByStudentAndProject(randomStudent, existingProject))
+            .thenReturn(Optional.empty());
+
+        assertThrows(AccessDeniedException.class, () -> {
+            taskService.updateTaskStatus(100L, statusDTO);
         });
 
         verify(taskRepository, never()).save(any());
