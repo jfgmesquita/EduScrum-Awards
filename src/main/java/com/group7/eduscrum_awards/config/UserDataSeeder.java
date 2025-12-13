@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Loads the default admin user into the database on startup.
+ * THIS CLASS SHOULD BE USED ONLY IN DEVELOPMENT OR TESTING ENVIRONMENTS!
+ * 
+ * This class seeds the database with an initial admin user if one does not already exist.
  */
 @Component
 public class UserDataSeeder implements CommandLineRunner {
