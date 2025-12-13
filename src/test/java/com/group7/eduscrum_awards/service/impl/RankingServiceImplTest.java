@@ -31,7 +31,6 @@ class RankingServiceImplTest {
     @InjectMocks
     private RankingServiceImpl rankingService;
 
-
     @Test
     @DisplayName("getStudentRanking | Should return list of student rankings")
     void testGetStudentRanking() {
