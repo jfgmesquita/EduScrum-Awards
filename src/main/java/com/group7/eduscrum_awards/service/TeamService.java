@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service;
 
 import java.util.List;
 
+import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
@@ -51,4 +52,15 @@ public interface TeamService {
      * @return A list of TeamDTOs representing the teams in the course.
      */
     List<TeamDTO> getTeamsByCourse(Long courseId);
+
+    /**
+     * Retrieves all developers (TeamMembers with DEVELOPER role) from the current user's team,
+     * given a context of a Sprint or a Task.
+     *
+     * @param sprintId Optional Sprint ID.
+     * @param taskId Optional Task ID.
+     * @param userEmail The email of the logged-in user (to identify their team).
+     * @return List of DeveloperDTO.
+     */
+    List<DeveloperDTO> getDevelopersByContext(Long sprintId, Long taskId, String userEmail);
 }
