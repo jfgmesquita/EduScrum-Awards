@@ -262,4 +262,24 @@ class TeamServiceImplTest {
 
         verify(teamRepository, never()).save(any());
     }
+
+    // Test for getTeamsByProject
+
+    @Test
+    @DisplayName("getTeamsByProject | Should return list of TeamDTOs")
+    void testGetTeamsByProject_Success() {
+        Long projectId = 1L;
+        java.util.List<Team> mockTeams = java.util.List.of(savedTeam);
+
+        when(teamRepository.findByProjectId(projectId)).thenReturn(mockTeams);
+
+        java.util.List<TeamDTO> result = teamService.getTeamsByProject(projectId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Test Team", result.get(0).getName());
+        assertEquals(projectId, result.get(0).getProjectId());
+        
+        verify(teamRepository, times(1)).findByProjectId(projectId);
+    }
 }

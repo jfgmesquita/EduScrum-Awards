@@ -2,6 +2,8 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
+import com.group7.eduscrum_awards.dto.CourseUpdateDTO;
+import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
@@ -134,5 +136,68 @@ public class CourseServiceImpl implements CourseService {
     @Transactional(readOnly = true)
     public List<CourseDTO> getAllCourses() {
         return courseRepository.findAll().stream().map(CourseDTO::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all courses associated with a specific degree.
+     * 
+     * @param degreeId The ID of the degree.
+     * @return A list of {@link CourseDTO} representing the courses in the specified degree.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseDTO> getCoursesByDegree(Long degreeId) {
+        return courseRepository.findByDegreeId(degreeId).stream()
+                .map(CourseDTO::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all courses taught by a specific teacher.
+     * 
+     * @param teacherId The ID of the teacher.
+     * @return A list of {@link CourseDTO} representing the courses taught by the specified teacher.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseDTO> getCoursesByTeacher(Long teacherId) {
+        return courseRepository.findCoursesByTeacherId(teacherId).stream()
+                .map(CourseDTO::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Gets all students enrolled in a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of {@link UserDTO} representing the students in the specified course.
+     * @throws ResourceNotFoundException if the course is not found.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> getStudentsInCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+        
+        return course.getStudents().stream()
+                .map(UserDTO::new).collect(Collectors.toList());
+    }
+
+    /**
+     * Updates the details of an existing course.
+     * 
+     * @param id  The ID of the course to update.
+     * @param dto The data transfer object containing updated course information.
+     * @return A {@link CourseDTO} representing the updated course.
+     * @throws ResourceNotFoundException if the course is not found.
+     */
+    @Override
+    @Transactional
+    public CourseDTO updateCourse(Long id, CourseUpdateDTO dto) {
+        Course course = courseRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + id));
+
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            course.setName(dto.getName());
+        }
+        return new CourseDTO(courseRepository.save(course));
     }
 }

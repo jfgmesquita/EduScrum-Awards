@@ -150,35 +150,32 @@ class ProjectServiceImplTest {
     @Test
     @DisplayName("getMyProjects | Should return filtered projects and tasks for the student")
     void testGetMyProjects_Success() {
-        // 1. Arrange: Preparar IDs e Dados
+        
         Long studentId = 5L;
         
-        // Garantir que o aluno configurado no setUp() tem o ID correto
         student.setId(studentId);
 
-        // Configurar o Mock do UserRepository para devolver o aluno (findById)
         when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
 
-        // 2. Arrange: Criar estrutura de Tarefas para testar o filtro
         Sprint sprint = new Sprint(1, "Sprint Goal", LocalDate.now(), LocalDate.now().plusDays(10), savedProject);
         sprint.setId(50L);
 
-        // --- Tarefa do Aluno (Deve aparecer) ---
+        // Student's own task (Should appear)
         TeamMember memberJohn = new TeamMember();
-        memberJohn.setStudent(student); // Associar ao aluno do teste (ID 5)
+        memberJohn.setStudent(student);
         
         Task taskJohn = new Task("Task Title John", sprint);
         taskJohn.setId(101L);
         taskJohn.setDescription("Description John");
         taskJohn.setTeamMember(memberJohn);
-        taskJohn.setStatus(com.group7.eduscrum_awards.model.enums.TaskStatus.TODO); // Ajusta o Enum se necessário
+        taskJohn.setStatus(com.group7.eduscrum_awards.model.enums.TaskStatus.TODO);
 
-        // --- Tarefa de Outro Aluno (NÃO deve aparecer) ---
+        // The other task assigned to a different student (Should not appear)
         Student otherStudent = new Student("Jane", "jane@test.com", "pass");
         otherStudent.setId(99L);
         
         TeamMember memberJane = new TeamMember();
-        memberJane.setStudent(otherStudent); // Associar a outro aluno
+        memberJane.setStudent(otherStudent);
 
         Task taskJane = new Task("Task Title Jane", sprint);
         taskJane.setId(102L);
@@ -186,33 +183,25 @@ class ProjectServiceImplTest {
         taskJane.setTeamMember(memberJane);
         taskJane.setStatus(com.group7.eduscrum_awards.model.enums.TaskStatus.DOING);
 
-        // Adicionar ambas as tarefas à Sprint e a Sprint ao Projeto
         sprint.setTasks(new HashSet<>(Set.of(taskJohn, taskJane)));
         savedProject.setSprints(new HashSet<>(Set.of(sprint)));
 
-        // Configurar o Mock do ProjectRepository
         when(projectRepository.findProjectsByStudentId(studentId)).thenReturn(List.of(savedProject));
 
-        // 3. Act: Executar o serviço
         List<StudentProjectDTO> result = projectService.getMyProjects(studentId);
 
-        // 4. Assert: Verificações
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals("Test Project", result.get(0).getName());
         assertEquals(1, result.get(0).getSprints().size());
 
-        // AQUI É A PARTE CRÍTICA:
-        // A lista de tarefas dentro da sprint deve ter tamanho 1 (apenas a do John)
         List<StudentTaskDTO> studentTasks = result.get(0).getSprints().get(0).getTasks();
         
         assertEquals(1, studentTasks.size(), "Deve conter apenas as tarefas atribuídas ao aluno");
-        
-        // Validar que a tarefa que veio é a correta
+
         assertEquals(101L, studentTasks.get(0).getId());
         assertEquals("Description John", studentTasks.get(0).getDescription());
         
-        // Validar que o método de repositório correto foi chamado
         verify(projectRepository, times(1)).findProjectsByStudentId(studentId);
     }
 
@@ -224,5 +213,22 @@ class ProjectServiceImplTest {
         assertThrows(ResourceNotFoundException.class, () -> projectService.getMyProjects(99L));
         
         verify(projectRepository, never()).findProjectsByStudentId(any());
+    }
+
+    @Test
+    @DisplayName("getProjectsSummary | Should return summary list")
+    void testGetProjectsSummary() {
+
+        Long courseId = 10L;
+        com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO summary = 
+            new com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO(1L, "Proj 1", LocalDate.now(), LocalDate.now(), 5L);
+        
+        when(projectRepository.findProjectsWithTeamCount(courseId)).thenReturn(List.of(summary));
+
+        List<com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO> result = projectService.getProjectsSummary(courseId);
+
+        assertEquals(1, result.size());
+        assertEquals(5L, result.get(0).getNumberOfTeams());
+        verify(projectRepository).findProjectsWithTeamCount(courseId);
     }
 }

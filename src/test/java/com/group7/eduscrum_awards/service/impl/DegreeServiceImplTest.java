@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.DegreeCreateDTO;
 import com.group7.eduscrum_awards.dto.DegreeDTO;
+import com.group7.eduscrum_awards.dto.DegreeUpdateDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Degree;
@@ -221,5 +222,22 @@ class DegreeServiceImplTest {
         assertEquals(existingDegree.getName(), result.get(0).getName()); // Validates mapping
         
         verify(degreeRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("updateDegree | Should update name successfully")
+    void testUpdateDegree() {
+
+        Long id = 1L;
+        Degree degree = new Degree("Old Name");
+        DegreeUpdateDTO dto = new DegreeUpdateDTO();
+        dto.setName("New Name");
+
+        when(degreeRepository.findById(id)).thenReturn(Optional.of(degree));
+        when(degreeRepository.save(any(Degree.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        DegreeDTO result = degreeService.updateDegree(id, dto);
+
+        assertEquals("New Name", result.getName());
     }
 }

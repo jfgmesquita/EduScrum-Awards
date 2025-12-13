@@ -5,6 +5,7 @@ import com.group7.eduscrum_awards.model.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -35,4 +36,12 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
      * @return an {@link Optional} containing the team if a match is found.
      */
     Optional<Team> findByGroupNumberAndProject(int groupNumber, Project project);
+
+    /**
+     * Finds all teams associated with a specific project.
+     *
+     * @param projectId The ID of the project.
+     * @return a list of {@link Team} entities associated with the project.
+     */
+    List<Team> findByProjectId(Long projectId);
 }

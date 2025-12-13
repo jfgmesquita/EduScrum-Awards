@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.service.impl;
 import com.group7.eduscrum_awards.dto.AwardAssignmentRequestDTO;
 import com.group7.eduscrum_awards.dto.AwardCreateDTO;
 import com.group7.eduscrum_awards.dto.AwardDTO;
+import com.group7.eduscrum_awards.dto.StudentAwardDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.*;
 import com.group7.eduscrum_awards.model.enums.AwardScope;
@@ -147,7 +148,7 @@ public class AwardServiceImpl implements AwardService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<com.group7.eduscrum_awards.dto.StudentAwardDTO> getStudentAwards(Long studentId) {
+    public List<StudentAwardDTO> getStudentAwards(Long studentId) {
         
         if (!userRepository.existsById(studentId)) {
             throw new ResourceNotFoundException("Student not found with id: " + studentId);
@@ -155,7 +156,7 @@ public class AwardServiceImpl implements AwardService {
 
         return assignmentRepository.findAllByStudentIdOrderByAssignedAtDesc(studentId)
                 .stream()
-                .map(com.group7.eduscrum_awards.dto.StudentAwardDTO::new)
+                .map(StudentAwardDTO::new)
                 .collect(Collectors.toList());
     }
 }

@@ -1,5 +1,7 @@
 package com.group7.eduscrum_awards.service;
 
+import java.util.List;
+
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
@@ -33,4 +35,12 @@ public interface TeamService {
      * @return A DTO of the updated Team.
      */
     TeamDTO addMemberToTeam(Long teamId, TeamMemberCreateDTO createDTO);
+
+    /**
+     * Retrieves all teams associated with a specific project.
+     * 
+     * @param projectId The ID of the project.
+     * @return A list of TeamDTOs representing the teams in the project.
+     */
+    public List<TeamDTO> getTeamsByProject(Long projectId);
 }

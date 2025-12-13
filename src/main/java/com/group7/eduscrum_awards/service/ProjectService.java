@@ -5,6 +5,7 @@ import java.util.List;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
+import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
@@ -35,4 +36,12 @@ public interface ProjectService {
      * @throws ResourceNotFoundException if the student with the given ID is not found.
      */
     List<StudentProjectDTO> getMyProjects(Long studentId);
+
+    /**
+     * Retrieves a summary of projects for a specific course, including the number of teams in each project.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of ProjectSummaryDTOs representing the projects and their team counts.
+     */
+    public List<ProjectSummaryDTO> getProjectsSummary(Long courseId);
 }

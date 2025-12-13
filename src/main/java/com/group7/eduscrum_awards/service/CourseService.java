@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.group7.eduscrum_awards.dto.CourseCreateDTO;
 import com.group7.eduscrum_awards.dto.CourseDTO;
+import com.group7.eduscrum_awards.dto.CourseUpdateDTO;
+import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
@@ -53,4 +55,39 @@ public interface CourseService {
      * @return A list of {@link CourseDTO} representing all courses.
      */
     List<CourseDTO> getAllCourses();
+
+    /**
+     * Retrieves all courses associated with a specific degree.
+     * 
+     * @param degreeId The ID of the degree.
+     * @return A list of {@link CourseDTO} representing the courses in the specified degree.
+     */
+    public List<CourseDTO> getCoursesByDegree(Long degreeId);
+
+    /**
+     * Retrieves all courses taught by a specific teacher.
+     * 
+     * @param teacherId The ID of the teacher.
+     * @return A list of {@link CourseDTO} representing the courses taught by the specified teacher.
+     */
+    public List<CourseDTO> getCoursesByTeacher(Long teacherId);
+
+    /**
+     * Gets all students enrolled in a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of {@link UserDTO} representing the students in the specified course.
+     * @throws ResourceNotFoundException if the course is not found.
+     */
+    public List<UserDTO> getStudentsInCourse(Long courseId);
+
+    /**
+     * Updates the details of an existing course.
+     * 
+     * @param id  The ID of the course to update.
+     * @param dto The data transfer object containing updated course information.
+     * @return A {@link CourseDTO} representing the updated course.
+     * @throws ResourceNotFoundException if the course is not found.
+     */
+    public CourseDTO updateCourse(Long id, CourseUpdateDTO dto);
 }

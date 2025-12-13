@@ -16,14 +16,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DegreeCreateDTO {
-
-    /**
-     * The name of the degree.
-     * 
-     * Validation constraints:
-     * {@link NotBlank} — must not be null or blank
-     * {@link Size} — must be between 3 and 100 characters
-     */
     @NotBlank(message = "The degree name cannot be blank.")
     @Size(min = 3, max = 100, message = "The name must be between 3 and 100 characters.")
     private String name;

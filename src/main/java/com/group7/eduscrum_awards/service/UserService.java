@@ -61,9 +61,9 @@ public interface UserService {
     /**
      * Retrieves a user by their username.
      *
-     * @param username the username of the user to retrieve
+     * @param email the email of the user to retrieve
      * @return a {@link UserDTO} representing the found user
-     * @throws EntityNotFoundException when no user with the given username exists
+     * @throws EntityNotFoundException when no user with the given email exists
      */
-    public UserDTO getUserByUsername(String username);
+    public UserDTO getUserByEmail(String email);
 }

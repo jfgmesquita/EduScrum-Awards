@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.service.impl;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
+import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
@@ -91,5 +92,17 @@ public class ProjectServiceImpl implements ProjectService {
         return projects.stream()
                 .map(project -> new StudentProjectDTO(project, studentId))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves a summary of projects for a specific course, including the number of teams in each project.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of ProjectSummaryDTOs representing the projects and their team counts.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectSummaryDTO> getProjectsSummary(Long courseId) {
+        return projectRepository.findProjectsWithTeamCount(courseId);
     }
 }
