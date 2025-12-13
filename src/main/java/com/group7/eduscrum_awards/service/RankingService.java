@@ -1,6 +1,8 @@
 package com.group7.eduscrum_awards.service;
 
 import com.group7.eduscrum_awards.dto.RankingItemDTO;
+import com.group7.eduscrum_awards.dto.rankings.StudentDashboardRankingDTO;
+
 import java.util.List;
 
 /** 
@@ -24,4 +26,12 @@ public interface RankingService {
      * @return List of RankingItemDTO representing team rankings.
      */
     List<RankingItemDTO> getTeamRanking(Long courseId);
+
+    /**
+     * Gets the dashboard rankings for a specific student.
+     * 
+     * @param studentId
+     * @return StudentDashboardRankingDTO containing individual and team rankings.
+     */
+    StudentDashboardRankingDTO getStudentDashboardRankings(Long studentId);
 }
