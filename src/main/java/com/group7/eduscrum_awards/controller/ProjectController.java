@@ -61,7 +61,7 @@ public class ProjectController {
      * @param studentId The ID of the student (from the URL path).
      * @return A ResponseEntity containing a list of StudentProjectDTOs.
      */
-    @GetMapping("   ")
+    @GetMapping("/students/{studentId}/projects")
     public ResponseEntity<List<StudentProjectDTO>> getStudentProjects(
             @PathVariable Long studentId, Principal principal) {
 
