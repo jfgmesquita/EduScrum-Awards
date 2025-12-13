@@ -5,6 +5,8 @@ import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
 import com.group7.eduscrum_awards.dto.TaskAssignDTO;
 import com.group7.eduscrum_awards.dto.TaskCreateDTO;
 import com.group7.eduscrum_awards.dto.TaskDTO;
+import com.group7.eduscrum_awards.dto.TaskStatusDTO;
+import com.group7.eduscrum_awards.model.enums.TaskStatus;
 import com.group7.eduscrum_awards.service.JwtService;
 import com.group7.eduscrum_awards.service.TaskService;
 import jakarta.servlet.FilterChain;
@@ -92,5 +94,30 @@ class TaskControllerTest {
                 .content(objectMapper.writeValueAsString(assignDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(taskId));
+    }
+
+    @Test
+    @DisplayName("updateTaskStatus | Should return 200 OK")
+    @WithMockUser(roles = "STUDENT")
+    void testUpdateTaskStatus() throws Exception {
+        Long taskId = 1L;
+        
+        TaskStatusDTO statusDTO = new TaskStatusDTO();
+        statusDTO.setStatus(TaskStatus.DONE);
+
+        TaskDTO responseDTO = new TaskDTO();
+        responseDTO.setId(taskId);
+        responseDTO.setStatus(TaskStatus.DONE);
+
+        when(taskService.updateTaskStatus(eq(taskId), any(TaskStatusDTO.class)))
+            .thenReturn(responseDTO);
+
+        mockMvc.perform(patch("/api/v1/tasks/{taskId}/status", taskId)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(statusDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(taskId))
+                .andExpect(jsonPath("$.status").value("DONE"));
     }
 }
