@@ -4,6 +4,7 @@ import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberViewDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
@@ -169,6 +170,7 @@ public class TeamServiceImpl implements TeamService {
      * @param taskId Optional Task ID.
      * @param userEmail The email of the currently logged-in user.
      * @return A list of DeveloperDTOs representing the developers in the user's team.
+     * @throws IllegalArgumentException if both sprintId and taskId are null.
      */
     @Override
     @Transactional(readOnly = true)
@@ -192,7 +194,7 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userEmail));
 
         if (!(currentUser instanceof Student)) {
-             throw new IllegalArgumentException("Only Students belong to a specific Team context.");
+            throw new IllegalArgumentException("Access denied. This endpoint is only accessible to student users.");
         }
 
         Student currentStudent = (Student) currentUser;
@@ -205,6 +207,26 @@ public class TeamServiceImpl implements TeamService {
         return myTeam.getMembers().stream()
                 .filter(m -> m.getTeamRole() == TeamRole.DEVELOPER)
                 .map(DeveloperDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all members of a specific team.
+     *
+     * @param teamId The ID of the team.
+     * @return List of TeamMemberViewDTO containing user details and roles.
+     * @throws ResourceNotFoundException if the team does not exist.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TeamMemberViewDTO> getTeamMembers(Long teamId) {
+        // Find the Team
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + teamId));
+
+        // Map members to DTO
+        return team.getMembers().stream()
+                .map(TeamMemberViewDTO::new)
                 .collect(Collectors.toList());
     }
 }
