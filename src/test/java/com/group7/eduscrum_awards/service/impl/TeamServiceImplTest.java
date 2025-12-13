@@ -5,6 +5,7 @@ import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberViewDTO;
 import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.model.Student;
@@ -23,6 +24,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -281,5 +284,35 @@ class TeamServiceImplTest {
         assertEquals(projectId, result.get(0).getProjectId());
         
         verify(teamRepository, times(1)).findByProjectId(projectId);
+    }
+
+    @Test
+    @DisplayName("getTeamMembers | Should return mapped DTOs")
+    void testGetTeamMembers() {
+        Long teamId = 10L;
+        
+        // Mock Team and Members
+        Team team = new Team("My Team", 1, existingProject);
+        team.setId(teamId);
+        
+        Student s1 = new Student("Alice", "alice@test.com", "pass");
+        s1.setId(1L);
+        
+        TeamMember tm1 = new TeamMember();
+        tm1.setId(100L);
+        tm1.setStudent(s1);
+        tm1.setTeamRole(TeamRole.PRODUCT_OWNER);
+        tm1.setTeam(team);
+        
+        team.getMembers().add(tm1);
+
+        when(teamRepository.findById(teamId)).thenReturn(Optional.of(team));
+
+        List<TeamMemberViewDTO> result = teamService.getTeamMembers(teamId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Alice", result.get(0).getName());
+        assertEquals(TeamRole.PRODUCT_OWNER, result.get(0).getRole());
     }
 }
