@@ -28,6 +28,7 @@ public class DashboardSprintDTO {
         this.startDate = sprint.getStartDate();
         this.endDate = sprint.getEndDate();
         this.tasks = sprint.getTasks().stream()
+                .sorted(java.util.Comparator.comparing(task -> task.getId()))
                 .map(DashboardTaskDTO::new)
                 .collect(Collectors.toList());
     }
