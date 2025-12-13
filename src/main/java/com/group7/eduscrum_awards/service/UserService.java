@@ -3,10 +3,13 @@ package com.group7.eduscrum_awards.service;
 import java.util.List;
 
 import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
+import com.group7.eduscrum_awards.dto.TeacherUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
+
+import jakarta.persistence.EntityNotFoundException;
 
 /**
  * Service Interface (Contract) for User operations.
@@ -66,4 +69,33 @@ public interface UserService {
      * @throws EntityNotFoundException when no user with the given email exists
      */
     public UserDTO getUserByEmail(String email);
+
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param id the ID of the user to retrieve
+     * @return a {@link UserDTO} representing the found user
+     * @throws ResourceNotFoundException when no user with the given ID exists
+     */
+    UserDTO getUserById(Long id);
+
+    /**
+     * Updates an existing teacher's information.
+     *
+     * @param id the ID of the teacher to update
+     * @param dto the DTO containing the updated information
+     * @return a {@link UserDTO} representing the updated teacher
+     * @throws ResourceNotFoundException when no user with the given ID exists
+     * @throws IllegalArgumentException when the user is not a teacher
+     */
+    UserDTO updateTeacher(Long id, TeacherUpdateDTO dto);
+
+    /**
+     * Retrieves all teachers teaching a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of {@link UserDTO} representing the teachers of the specified course.
+     * @throws ResourceNotFoundException if the course is not found.
+     */
+    List<UserDTO> getTeachersByCourse(Long courseId);
 }

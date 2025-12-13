@@ -1,15 +1,18 @@
 package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
+import com.group7.eduscrum_awards.dto.TeacherUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.enums.Role;
+import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Degree;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
+import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.UserService;
@@ -32,12 +35,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
     private final DegreeRepository degreeRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, DegreeRepository degreeRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, DegreeRepository degreeRepository, 
+        CourseRepository courseRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.courseRepository = courseRepository;
         this.degreeRepository = degreeRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -198,5 +204,76 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         return new UserDTO(user);
+    }
+
+    /**
+     * Retrieves a user by their ID.
+     *
+     * @param id the ID of the user to retrieve
+     * @return a {@link UserDTO} representing the found user
+     * @throws ResourceNotFoundException when no user with the given ID exists
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public UserDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        return new UserDTO(user);
+    }
+
+    /**
+     * Updates an existing teacher's information.
+     *
+     * @param id the ID of the teacher to update
+     * @param dto the DTO containing the updated information
+     * @return a {@link UserDTO} representing the updated teacher
+     * @throws ResourceNotFoundException when no user with the given ID exists
+     * @throws IllegalArgumentException when the user is not a teacher
+     */
+    @Override
+    @Transactional
+    public UserDTO updateTeacher(Long id, TeacherUpdateDTO dto) {
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        
+        if (!(user instanceof Teacher)) {
+            throw new IllegalArgumentException("User is not a Teacher");
+        }
+
+        Teacher teacher = (Teacher) user;
+
+        if (dto.getName() != null && !dto.getName().isBlank()) {
+            teacher.setName(dto.getName());
+        }
+        
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            // Check uniqueness if email changed
+            if (!teacher.getEmail().equals(dto.getEmail())) {
+                userRepository.findByEmail(dto.getEmail()).ifPresent(u -> {
+                    throw new DuplicateResourceException("Email already in use");
+                });
+                teacher.setEmail(dto.getEmail());
+            }
+        }
+        
+        return new UserDTO(userRepository.save(teacher));
+    }
+
+    /**
+     * Retrieves all teachers teaching a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of {@link UserDTO} representing the teachers of the specified course.
+     * @throws ResourceNotFoundException if the course is not found.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> getTeachersByCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+            .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + courseId));
+        
+        return course.getTeachers().stream()
+                .map(UserDTO::new)
+                .collect(Collectors.toList());
     }
 }

@@ -58,4 +58,13 @@ public interface DegreeService {
      * @throws ResourceNotFoundException when no degree with the given ID exists
      */
     public DegreeDTO updateDegree(Long id, DegreeUpdateDTO dto);
+
+    /**
+     * Retrieves a degree by its ID.
+     * 
+     * @param id the ID of the degree to retrieve
+     * @return a {@link DegreeDTO} representing the degree
+     * @throws ResourceNotFoundException when no degree with the given ID exists
+     */
+    DegreeDTO getDegreeById(Long id);
 }

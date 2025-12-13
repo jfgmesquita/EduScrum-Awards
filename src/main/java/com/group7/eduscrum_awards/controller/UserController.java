@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.controller;
 import com.group7.eduscrum_awards.dto.PasswordUpdateDTO;
 import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
 import com.group7.eduscrum_awards.dto.TeacherRegistrationDTO;
+import com.group7.eduscrum_awards.dto.TeacherUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.model.enums.Role;
@@ -40,6 +41,43 @@ public class UserController {
     public UserController(UserService userService, CourseService courseService) {
         this.userService = userService;
         this.courseService = courseService;
+    }
+
+    /**
+     * Endpoint to retrieve a User by their ID.
+     * Accessible via: GET /api/v1/users/{id}
+     * 
+     * @param id The ID of the User to retrieve.
+     * @return A ResponseEntity containing the UserDTO and HTTP status 200.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    /**
+     * Endpoint to update an existing Teacher.
+     * Accessible via: PUT /api/v1/users/teachers/{id}
+     * 
+     * @param id The ID of the Teacher to be updated.
+     * @param dto The updated data for the Teacher, passed in the request body.
+     * @return A ResponseEntity containing the updated UserDTO and HTTP status 200.
+     */
+    @PutMapping("/teachers/{id}")
+    public ResponseEntity<UserDTO> updateTeacher(@PathVariable Long id, @Valid @RequestBody TeacherUpdateDTO dto) {
+        return ResponseEntity.ok(userService.updateTeacher(id, dto));
+    }
+
+    /**
+     * Endpoint to retrieve all Teachers teaching a specific Course.
+     * Accessible via: GET /api/v1/users/courses/{courseId}/teachers
+     * 
+     * @param courseId The ID of the Course.
+     * @return A ResponseEntity containing the list of UserDTOs and HTTP status 200.
+     */
+    @GetMapping("/courses/{courseId}/teachers")
+    public ResponseEntity<List<UserDTO>> getTeachersByCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(userService.getTeachersByCourse(courseId));
     }
 
     /**

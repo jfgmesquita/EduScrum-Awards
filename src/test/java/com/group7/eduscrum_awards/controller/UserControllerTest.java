@@ -6,6 +6,7 @@ import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
 import com.group7.eduscrum_awards.dto.PasswordUpdateDTO;
 import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
 import com.group7.eduscrum_awards.dto.TeacherRegistrationDTO;
+import com.group7.eduscrum_awards.dto.TeacherUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
@@ -92,6 +93,32 @@ class UserControllerTest {
         createdUserDTO.setName("Prof Test");
         createdUserDTO.setEmail("prof@test.com");
         createdUserDTO.setRole(Role.TEACHER);
+    }
+
+    @Test
+    @DisplayName("getUserById | Should return user")
+    @WithMockUser
+    void testGetUserById() throws Exception {
+        Long id = 1L;
+        UserDTO dto = new UserDTO(); dto.setId(id); dto.setName("User");
+
+        when(userService.getUserById(id)).thenReturn(dto);
+
+        mockMvc.perform(get("/api/v1/users/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("User"));
+    }
+
+    @Test
+    @DisplayName("getTeachersByCourse | Should return list")
+    @WithMockUser
+    void testGetTeachersByCourse() throws Exception {
+        Long courseId = 10L;
+        when(userService.getTeachersByCourse(courseId)).thenReturn(List.of(new UserDTO()));
+
+        mockMvc.perform(get("/api/v1/users/courses/{courseId}/teachers", courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1));
     }
 
     @Test
@@ -257,5 +284,57 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(passDTO)))
                 .andExpect(status().isNoContent()); // 204
+    }
+
+    @Test
+    @DisplayName("updateTeacher | Should update and return user")
+    @WithMockUser(roles = "ADMIN")
+    void testUpdateTeacher() throws Exception {
+        Long id = 2L;
+        
+        TeacherUpdateDTO updateDTO = new TeacherUpdateDTO();
+        updateDTO.setName("New Name");
+        updateDTO.setEmail("updated@test.com");
+
+        UserDTO response = new UserDTO(); 
+        response.setId(id); 
+        response.setName("New Name");
+        response.setEmail("updated@test.com");
+
+        when(userService.updateTeacher(eq(id), any(TeacherUpdateDTO.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/users/teachers/{id}", id)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("New Name"));
+    }
+
+    @Test
+    @DisplayName("updateTeacher | Should allow partial update (Name only)")
+    @WithMockUser(roles = "ADMIN")
+    void testUpdateTeacher_PartialUpdate() throws Exception {
+        Long id = 2L;
+        
+        // Create DTO with ONLY name (Email is null)
+        com.group7.eduscrum_awards.dto.TeacherUpdateDTO updateDTO = new com.group7.eduscrum_awards.dto.TeacherUpdateDTO();
+        updateDTO.setName("Partial Name Update");
+
+        UserDTO response = new UserDTO(); 
+        response.setId(id); 
+        response.setName("Partial Name Update");
+        response.setEmail("original@test.com"); // Email remains unchanged
+
+        // 3. Mock Service
+        when(userService.updateTeacher(eq(id), any(com.group7.eduscrum_awards.dto.TeacherUpdateDTO.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/users/teachers/{id}", id)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Partial Name Update"))
+                .andExpect(jsonPath("$.email").value("original@test.com"));
     }
 }

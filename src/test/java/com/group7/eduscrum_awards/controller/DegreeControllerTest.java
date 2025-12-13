@@ -67,6 +67,21 @@ class DegreeControllerTest {
     }
 
     @Test
+    @DisplayName("getDegreeById | Should return degree")
+    @WithMockUser
+    void testGetDegreeById() throws Exception {
+        Long id = 1L;
+        DegreeDTO dto = new DegreeDTO(); 
+        dto.setId(id); dto.setName("CS");
+
+        when(degreeService.getDegreeById(id)).thenReturn(dto);
+
+        mockMvc.perform(get("/api/v1/degrees/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id));
+    }
+
+    @Test
     @DisplayName("registerDegree | Should create and return 201")
     @WithMockUser(roles = "ADMIN")
     void testRegisterDegree() throws Exception {

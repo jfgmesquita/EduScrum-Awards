@@ -41,6 +41,30 @@ public class CourseController {
     }
 
     /**
+     * Endpoint to retrieve a Course by its ID.
+     * Accessible via: GET /api/v1/courses/{id}
+     * 
+     * @param id The ID of the Course to retrieve.
+     * @return A ResponseEntity containing the CourseDTO and HTTP status 200.
+     */
+    @GetMapping("/courses/{id}")
+    public ResponseEntity<CourseDTO> getCourseById(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.getCourseById(id));
+    }
+    
+    /**
+     * Endpoint to retrieve all Courses a specific Student is enrolled in.
+     * Accessible via: GET /api/v1/students/{studentId}/courses
+     * 
+     * @param studentId The ID of the Student.
+     * @return A ResponseEntity containing the list of CourseDTOs and HTTP status 200.
+     */
+    @GetMapping("/students/{studentId}/courses")
+    public ResponseEntity<List<CourseDTO>> getCoursesByStudent(@PathVariable Long studentId) {
+        return ResponseEntity.ok(courseService.getCoursesByStudent(studentId));
+    }
+
+    /**
      * Endpoint to register a new Course and link it to a Degree.
      * Accessible via: POST /api/v1/degrees/{degreeId}/courses
      */

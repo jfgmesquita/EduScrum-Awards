@@ -35,6 +35,18 @@ public class DegreeController {
     }
 
     /**
+     * Endpoint to retrieve a Degree by its ID.
+     * Accessible via: GET /api/v1/degrees/{id}
+     * 
+     * @param id The ID of the Degree to retrieve.
+     * @return A ResponseEntity containing the DegreeDTO and HTTP status 200.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<DegreeDTO> getDegreeById(@PathVariable Long id) {
+        return ResponseEntity.ok(degreeService.getDegreeById(id));
+    }
+
+    /**
      * Endpoint to register a new Degree.
      * Accessible via: POST /api/v1/degrees
      *

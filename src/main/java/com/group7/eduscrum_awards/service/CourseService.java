@@ -90,4 +90,22 @@ public interface CourseService {
      * @throws ResourceNotFoundException if the course is not found.
      */
     public CourseDTO updateCourse(Long id, CourseUpdateDTO dto);
+
+    /**
+     * Retrieves a course by its ID.
+     * 
+     * @param id the ID of the course to retrieve
+     * @return a {@link CourseDTO} representing the course
+     * @throws ResourceNotFoundException when no course with the given ID exists
+     */
+    CourseDTO getCourseById(Long id);
+
+    /**
+     * Retrieves all courses a specific student is enrolled in.
+     * 
+     * @param studentId The ID of the student.
+     * @return A list of {@link CourseDTO} representing the courses the student is enrolled in.
+     * @throws ResourceNotFoundException if the student is not found.
+     */
+    List<CourseDTO> getCoursesByStudent(Long studentId);
 }
