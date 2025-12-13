@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
+import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
@@ -24,6 +25,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -117,5 +119,24 @@ class TeamControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(1))
                 .andExpect(jsonPath("$[0].name").value("Alpha Team"));
+    }
+
+    @Test
+    @DisplayName("getDevelopers | Should return list of developers given a sprintId")
+    @WithMockUser(username = "student@test.com", roles = "STUDENT")
+    void testGetDevelopers_WithSprintId() throws Exception {
+        Long sprintId = 10L;
+        
+        DeveloperDTO dev1 = new DeveloperDTO(100L, 5L, "Alice", "alice@gmail.com");
+        DeveloperDTO dev2 = new DeveloperDTO(101L, 6L, "Bob", "bob@gmail.com");
+
+        when(teamService.getDevelopersByContext(eq(sprintId), isNull(), eq("student@test.com")))
+            .thenReturn(List.of(dev1, dev2));
+
+        mockMvc.perform(get("/api/v1/teams/developers")
+                .param("sprintId", String.valueOf(sprintId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Alice"));
     }
 }
