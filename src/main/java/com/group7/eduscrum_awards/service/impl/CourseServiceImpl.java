@@ -200,4 +200,37 @@ public class CourseServiceImpl implements CourseService {
         }
         return new CourseDTO(courseRepository.save(course));
     }
+
+    /**
+     * Retrieves a course by its ID.
+     * 
+     * @param id the ID of the course to retrieve
+     * @return a {@link CourseDTO} representing the retrieved course
+     * @throws ResourceNotFoundException when no course with the given ID exists
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public CourseDTO getCourseById(Long id) {
+        Course course = courseRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Course not found: " + id));
+        return new CourseDTO(course);
+    }
+
+    /**
+     * Retrieves all courses a specific student is enrolled in.
+     * 
+     * @param studentId The ID of the student.
+     * @return A list of {@link CourseDTO} representing the courses the student is enrolled in.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CourseDTO> getCoursesByStudent(Long studentId) {
+        Student student = (Student) userRepository.findById(studentId)
+            .filter(u -> u instanceof Student)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
+            
+        return student.getCourses().stream()
+                .map(CourseDTO::new)
+                .collect(Collectors.toList());
+    }
 }
