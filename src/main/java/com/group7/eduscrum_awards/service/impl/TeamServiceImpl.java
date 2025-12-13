@@ -133,4 +133,18 @@ public class TeamServiceImpl implements TeamService {
         return teamRepository.findByProjectId(projectId).stream()
                 .map(TeamDTO::new).collect(Collectors.toList());
     }
+
+    /**
+     * Retrieves all teams associated with a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of TeamDTOs representing the teams in the course.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TeamDTO> getTeamsByCourse(Long courseId) {
+        return teamRepository.findTeamsByCourseId(courseId).stream()
+                .map(TeamDTO::new)
+                .collect(Collectors.toList());
+    }
 }

@@ -6,9 +6,12 @@ import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
+import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
+import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.JwtService;
 import com.group7.eduscrum_awards.service.ProjectService;
 import com.group7.eduscrum_awards.service.UserService;
@@ -106,7 +109,7 @@ class ProjectControllerTest {
         Long studentId = 5L;
 
         UserDTO mockUser = new UserDTO();
-        mockUser.setId(studentId); // ID 5
+        mockUser.setId(studentId);
         mockUser.setName("Student Name");
 
         when(userService.getUserByEmail("student@test.com")).thenReturn(mockUser);
@@ -198,5 +201,130 @@ class ProjectControllerTest {
         mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", targetId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("getProjectsByTeacher | Should return list when User matches Teacher ID")
+    @WithMockUser(username = "teacher@test.com", roles = "TEACHER")
+    void testGetProjectsByTeacher_Success() throws Exception {
+        Long teacherId = 10L;
+        UserDTO mockUser = new UserDTO();
+        mockUser.setId(teacherId);
+        mockUser.setEmail("teacher@test.com");
+        
+        when(userService.getUserByEmail("teacher@test.com")).thenReturn(mockUser);
+
+        ProjectSummaryDTO summary = new ProjectSummaryDTO(1L, "Proj A", LocalDate.now(), LocalDate.now(), 5L);
+        when(projectService.getProjectsByTeacher(teacherId)).thenReturn(List.of(summary));
+
+        mockMvc.perform(get("/api/v1/teachers/{teacherId}/projects", teacherId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Proj A"));
+    }
+
+    @Test
+    @DisplayName("getProjectsByTeacher | Should return 403 Forbidden on IDOR")
+    @WithMockUser(username = "hacker@test.com", roles = "TEACHER")
+    void testGetProjectsByTeacher_Forbidden() throws Exception {
+        Long targetId = 10L;
+        UserDTO hacker = new UserDTO();
+        hacker.setId(99L);
+        when(userService.getUserByEmail("hacker@test.com")).thenReturn(hacker);
+
+        mockMvc.perform(get("/api/v1/teachers/{teacherId}/projects", targetId))
+                .andExpect(status().isForbidden());
+        
+        verify(projectService, never()).getProjectsByTeacher(any());
+    }
+
+    @Test
+    @DisplayName("getProjectsByCourse | Should return summary list")
+    @WithMockUser(roles = "TEACHER")
+    void testGetProjectsByCourse() throws Exception {
+        Long courseId = 5L;
+        ProjectSummaryDTO summary = new ProjectSummaryDTO(1L, "Course Proj", LocalDate.now(), LocalDate.now(), 2L);
+        
+        when(projectService.getProjectsSummary(courseId)).thenReturn(List.of(summary));
+
+        mockMvc.perform(get("/api/v1/courses/{courseId}/projects", courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1));
+    }
+
+    @Test
+    @DisplayName("getProjectCount | Should return count")
+    @WithMockUser(roles = "TEACHER")
+    void testGetProjectCount() throws Exception {
+        Long courseId = 5L;
+        when(projectService.countProjectsInCourse(courseId)).thenReturn(10L);
+
+        mockMvc.perform(get("/api/v1/courses/{courseId}/projects/count", courseId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(10));
+    }
+
+    @Test
+    @DisplayName("getProjectDetails | Should return complex dashboard DTO")
+    @WithMockUser(roles = "TEACHER")
+    void testGetProjectDetails() throws Exception {
+        Long projectId = 50L;
+        TeacherProjectDetailsDTO details = new TeacherProjectDetailsDTO();
+        details.setId(projectId);
+        details.setName("Full Dashboard");
+        
+        when(projectService.getProjectDetails(projectId)).thenReturn(details);
+
+        mockMvc.perform(get("/api/v1/projects/{projectId}/details", projectId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Full Dashboard"));
+    }
+
+    @Test
+    @DisplayName("getProjectById | Should return 200 OK for authorized Teacher")
+    @WithMockUser(username = "teacher@test.com", roles = "TEACHER")
+    void testGetProjectById_Success() throws Exception {
+        Long projectId = 10L;
+        Long teacherId = 1L;
+
+        // Mock User
+        UserDTO user = new UserDTO();
+        user.setId(teacherId);
+        user.setRole(Role.TEACHER);
+        when(userService.getUserByEmail("teacher@test.com")).thenReturn(user);
+
+        // Mock Security Check (Allowed)
+        when(projectService.isTeacherAllowedInProject(projectId, teacherId)).thenReturn(true);
+
+        // Mock Data Retrieval
+        ProjectDTO dto = new ProjectDTO();
+        dto.setId(projectId);
+        dto.setName("My Project");
+        when(projectService.getProjectById(projectId)).thenReturn(dto);
+
+        mockMvc.perform(get("/api/v1/projects/{id}", projectId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("My Project"));
+    }
+
+    @Test
+    @DisplayName("getProjectById | Should return 403 Forbidden on IDOR")
+    @WithMockUser(username = "hacker@test.com", roles = "TEACHER")
+    void testGetProjectById_Forbidden() throws Exception {
+        Long projectId = 10L;
+        Long teacherId = 99L;
+
+        UserDTO user = new UserDTO();
+        user.setId(teacherId);
+        user.setRole(Role.TEACHER);
+        when(userService.getUserByEmail("hacker@test.com")).thenReturn(user);
+
+        // Mock Security Check (Denied)
+        when(projectService.isTeacherAllowedInProject(projectId, teacherId)).thenReturn(false);
+
+        mockMvc.perform(get("/api/v1/projects/{id}", projectId))
+                .andExpect(status().isForbidden());
+                
+        verify(projectService, never()).getProjectById(any());
     }
 }

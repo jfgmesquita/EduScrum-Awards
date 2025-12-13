@@ -2,7 +2,10 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.DashboardSprintDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
+import com.group7.eduscrum_awards.dto.dashboard.TeamDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -10,10 +13,12 @@ import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Student;
+import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
+import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.ProjectService;
 
@@ -35,14 +40,17 @@ public class ProjectServiceImpl implements ProjectService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final TeamRepository teamRepository;
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository, CourseRepository courseRepository, 
-                              UserRepository userRepository, TeamMemberRepository teamMemberRepository) {
+                              UserRepository userRepository, TeamMemberRepository teamMemberRepository,
+                              TeamRepository teamRepository) {
         this.projectRepository = projectRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
         this.teamMemberRepository = teamMemberRepository;
+        this.teamRepository = teamRepository;
     }
 
     /** Creates a new project for a specific course. */
@@ -138,5 +146,99 @@ public class ProjectServiceImpl implements ProjectService {
             })
             .sorted(java.util.Comparator.comparing(dto -> dto.getProjectName()))
             .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves all projects for courses taught by a specific teacher.
+     *
+     * @param teacherId The ID of the teacher.
+     * @return List of ProjectSummaryDTOs.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectSummaryDTO> getProjectsByTeacher(Long teacherId) {
+        return projectRepository.findProjectsByTeacherId(teacherId);
+    }
+
+    /**
+     * Retrieves detailed information about a specific project for teacher dashboard view.
+     * Includes project info, teams, sprints, and tasks.
+     *
+     * @param projectId The ID of the project.
+     * @return TeacherProjectDetailsDTO containing detailed project information.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public TeacherProjectDetailsDTO getProjectDetails(Long projectId) {
+        // Fetch Project + Sprints + Tasks (Optimized Query)
+        Project project = projectRepository.findProjectWithSprintsAndTasks(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found: " + projectId));
+
+        // Fetch Teams separately (Simple Query)
+        List<Team> teams = teamRepository.findByProjectId(projectId);
+
+        // Assemble DTO
+        TeacherProjectDetailsDTO dto = new TeacherProjectDetailsDTO();
+        dto.setId(project.getId());
+        dto.setName(project.getName());
+        dto.setDescription(project.getDescription());
+
+        // Map Teams
+        dto.setTeams(teams.stream()
+                .map(TeamDTO::new)
+                .collect(Collectors.toList()));
+
+        // Map Sprints (using existing DashboardSprintDTO logic)
+        List<DashboardSprintDTO> sprintDTOs = project.getSprints().stream()
+                .sorted((s1, s2) -> Integer.compare(s1.getSprintNumber(), s2.getSprintNumber()))
+                .map(DashboardSprintDTO::new)
+                .collect(Collectors.toList());
+        dto.setSprints(sprintDTOs);
+
+        return dto;
+    }
+    
+    /**
+     * Counts the number of projects in a specific course.
+     *
+     * @param courseId The ID of the course.
+     * @return The count of projects in the course.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public long countProjectsInCourse(Long courseId) {
+        return projectRepository.countByCourseId(courseId);
+    }
+
+    /**
+     * Retrieves a project by its ID.
+     * 
+     * @param projectId The ID of the project.
+     * @return The ProjectDTO.
+     * @throws ResourceNotFoundException if the project does not exist.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectDTO getProjectById(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+        return new ProjectDTO(project);
+    }
+
+    /**
+     * Verifies if a teacher teaches the course associated with a specific project.
+     * Helper method for security checks.
+     * 
+     * @param projectId The ID of the project.
+     * @param teacherId The ID of the teacher.
+     * @return true if the teacher has access, false otherwise.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isTeacherAllowedInProject(Long projectId, Long teacherId) {
+        return projectRepository.findById(projectId)
+                .map(project -> project.getCourse().getTeachers().stream()
+                        .anyMatch(t -> t.getId().equals(teacherId)))
+                .orElse(false);
     }
 }

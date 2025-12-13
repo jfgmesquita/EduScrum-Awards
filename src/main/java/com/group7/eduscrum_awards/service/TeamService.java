@@ -43,4 +43,12 @@ public interface TeamService {
      * @return A list of TeamDTOs representing the teams in the project.
      */
     public List<TeamDTO> getTeamsByProject(Long projectId);
+
+    /**
+     * Retrieves all teams associated with a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return A list of TeamDTOs representing the teams in the course.
+     */
+    List<TeamDTO> getTeamsByCourse(Long courseId);
 }
