@@ -18,6 +18,8 @@ public class CourseDTO {
 
     private Long id;
     private String name;
+    private Long degreeId;
+    private String degreeName;
 
     /**
      * Create a DTO from the given entity.
@@ -27,5 +29,10 @@ public class CourseDTO {
     public CourseDTO(Course course) {
         this.id = course.getId();
         this.name = course.getName();
+
+        if (course.getDegree() != null) {
+            this.degreeId = course.getDegree().getId();
+            this.degreeName = course.getDegree().getName();
+        }
     }
 }
