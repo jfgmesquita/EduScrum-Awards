@@ -75,4 +75,16 @@ public class TeamController {
     public ResponseEntity<List<TeamDTO>> getTeamsByProject(@PathVariable Long projectId) {
         return ResponseEntity.ok(teamService.getTeamsByProject(projectId));
     }
+
+    /**
+     * Endpoint to retrieve all Teams associated with a specific Course.
+     * Accessible via: GET /api/v1/courses/{courseId}/teams
+     *
+     * @param courseId The ID of the Course.
+     * @return A ResponseEntity containing a list of TeamDTOs and HTTP status 200.
+     */
+    @GetMapping("/courses/{courseId}/teams")
+    public ResponseEntity<List<TeamDTO>> getTeamsByCourse(@PathVariable Long courseId) {
+        return ResponseEntity.ok(teamService.getTeamsByCourse(courseId));
+    }
 }
