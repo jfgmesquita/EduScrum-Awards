@@ -1,11 +1,13 @@
 package com.group7.eduscrum_awards.controller;
 
+import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
 import com.group7.eduscrum_awards.service.TeamService;
 import jakarta.validation.Valid;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,5 +88,25 @@ public class TeamController {
     @GetMapping("/courses/{courseId}/teams")
     public ResponseEntity<List<TeamDTO>> getTeamsByCourse(@PathVariable Long courseId) {
         return ResponseEntity.ok(teamService.getTeamsByCourse(courseId));
+    }
+
+    /**
+     * Endpoint to retrieve all Developers (TeamMembers with DEVELOPER role)
+     * from the current user's team, given a context of a Sprint or a Task.
+     * Accessible via: GET /api/v1/teams/developers?sprintId={sprintId}&taskId={taskId}
+     *
+     * @param sprintId Optional Sprint ID as a request parameter.
+     * @param taskId Optional Task ID as a request parameter.
+     * @param principal The security principal of the currently logged-in user.
+     * @return A ResponseEntity containing a list of DeveloperDTOs and HTTP status 200.
+     */
+    @GetMapping("/teams/developers")
+    public ResponseEntity<List<DeveloperDTO>> getDevelopers(
+            @RequestParam(required = false) Long sprintId,
+            @RequestParam(required = false) Long taskId,
+            Principal principal) {
+        
+        List<DeveloperDTO> developers = teamService.getDevelopersByContext(sprintId, taskId, principal.getName());
+        return ResponseEntity.ok(developers);
     }
 }
