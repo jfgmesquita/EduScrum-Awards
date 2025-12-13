@@ -3,6 +3,8 @@ package com.group7.eduscrum_awards.repository;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -44,4 +46,15 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
      * @return a list of {@link Team} entities associated with the project.
      */
     List<Team> findByProjectId(Long projectId);
+
+    /**
+     * Finds all teams belonging to a specific course (via Project).
+     * 
+     * @param courseId The ID of the course.
+     * @return List of Teams.
+     */
+    @Query("SELECT t FROM Team t " +
+           "JOIN t.project p " +
+           "WHERE p.course.id = :courseId")
+    List<Team> findTeamsByCourseId(@Param("courseId") Long courseId);
 }
