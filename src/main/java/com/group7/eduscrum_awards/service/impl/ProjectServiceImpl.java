@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -9,8 +10,10 @@ import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Student;
+import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
+import com.group7.eduscrum_awards.repository.TeamMemberRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.service.ProjectService;
 
@@ -31,12 +34,15 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Autowired
-    public ProjectServiceImpl(ProjectRepository projectRepository, CourseRepository courseRepository, UserRepository userRepository) {
+    public ProjectServiceImpl(ProjectRepository projectRepository, CourseRepository courseRepository, 
+                              UserRepository userRepository, TeamMemberRepository teamMemberRepository) {
         this.projectRepository = projectRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
+        this.teamMemberRepository = teamMemberRepository;
     }
 
     /** Creates a new project for a specific course. */
@@ -104,5 +110,35 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional(readOnly = true)
     public List<ProjectSummaryDTO> getProjectsSummary(Long courseId) {
         return projectRepository.findProjectsWithTeamCount(courseId);
+    }
+
+    /**
+     * Retrieves all projects for a specific student, including their role,
+     * team name, and all associated sprints and tasks.
+     *
+     * @param studentId The ID of the student.
+     * @return List of dashboard DTOs.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<StudentDashboardProjectDTO> getStudentDashboard(Long studentId) {
+        // 1. Verify student exists (optional, but good practice)
+        userRepository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        // 2. Find all teams the student belongs to
+        List<TeamMember> memberships = teamMemberRepository.findByStudentId(studentId);
+
+        // 3. Map memberships to Dashboard DTOs
+        return memberships.stream()
+            .map(member -> {
+                Project project = member.getTeam().getProject();
+                return new StudentDashboardProjectDTO(
+                    project,
+                    member.getTeamRole(),
+                    member.getTeam().getName()
+                );
+            })
+            .collect(Collectors.toList());
     }
 }
