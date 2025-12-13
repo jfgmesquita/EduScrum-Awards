@@ -4,6 +4,7 @@ import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberViewDTO;
 import com.group7.eduscrum_awards.service.TeamService;
 import jakarta.validation.Valid;
 
@@ -108,5 +109,17 @@ public class TeamController {
         
         List<DeveloperDTO> developers = teamService.getDevelopersByContext(sprintId, taskId, principal.getName());
         return ResponseEntity.ok(developers);
+    }
+
+    /**
+     * Endpoint to retrieve all members of a specific team.
+     * Accessible via: GET /api/v1/teams/{teamId}/members
+     *
+     * @param teamId The ID of the team.
+     * @return A ResponseEntity containing a list of TeamMemberViewDTOs and HTTP status 200.
+     */
+    @GetMapping("/teams/{teamId}/members")
+    public ResponseEntity<List<TeamMemberViewDTO>> getTeamMembers(@PathVariable Long teamId) {
+        return ResponseEntity.ok(teamService.getTeamMembers(teamId));
     }
 }

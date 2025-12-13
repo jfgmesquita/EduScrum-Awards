@@ -6,6 +6,7 @@ import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberViewDTO;
 import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.service.JwtService;
@@ -138,5 +139,21 @@ class TeamControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$[0].name").value("Alice"));
+    }
+
+    @Test
+    @DisplayName("getTeamMembers | Should return list of members")
+    @WithMockUser(roles = "TEACHER")
+    void testGetTeamMembers() throws Exception {
+        Long teamId = 10L;
+        TeamMemberViewDTO memberDTO = new TeamMemberViewDTO(5L, "John Doe", TeamRole.SCRUM_MASTER, 100L);
+
+        when(teamService.getTeamMembers(teamId)).thenReturn(List.of(memberDTO));
+
+        mockMvc.perform(get("/api/v1/teams/{teamId}/members", teamId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].userId").value(5L))
+                .andExpect(jsonPath("$[0].role").value("SCRUM_MASTER"));
     }
 }
