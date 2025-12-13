@@ -209,4 +209,36 @@ public class ProjectServiceImpl implements ProjectService {
     public long countProjectsInCourse(Long courseId) {
         return projectRepository.countByCourseId(courseId);
     }
+
+    /**
+     * Retrieves a project by its ID.
+     * 
+     * @param projectId The ID of the project.
+     * @return The ProjectDTO.
+     * @throws ResourceNotFoundException if the project does not exist.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectDTO getProjectById(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+        return new ProjectDTO(project);
+    }
+
+    /**
+     * Verifies if a teacher teaches the course associated with a specific project.
+     * Helper method for security checks.
+     * 
+     * @param projectId The ID of the project.
+     * @param teacherId The ID of the teacher.
+     * @return true if the teacher has access, false otherwise.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isTeacherAllowedInProject(Long projectId, Long teacherId) {
+        return projectRepository.findById(projectId)
+                .map(project -> project.getCourse().getTeachers().stream()
+                        .anyMatch(t -> t.getId().equals(teacherId)))
+                .orElse(false);
+    }
 }
