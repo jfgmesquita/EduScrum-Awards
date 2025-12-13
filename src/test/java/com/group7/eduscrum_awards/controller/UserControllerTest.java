@@ -310,4 +310,31 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("New Name"));
     }
+
+    @Test
+    @DisplayName("updateTeacher | Should allow partial update (Name only)")
+    @WithMockUser(roles = "ADMIN")
+    void testUpdateTeacher_PartialUpdate() throws Exception {
+        Long id = 2L;
+        
+        // Create DTO with ONLY name (Email is null)
+        com.group7.eduscrum_awards.dto.TeacherUpdateDTO updateDTO = new com.group7.eduscrum_awards.dto.TeacherUpdateDTO();
+        updateDTO.setName("Partial Name Update");
+
+        UserDTO response = new UserDTO(); 
+        response.setId(id); 
+        response.setName("Partial Name Update");
+        response.setEmail("original@test.com"); // Email remains unchanged
+
+        // 3. Mock Service
+        when(userService.updateTeacher(eq(id), any(com.group7.eduscrum_awards.dto.TeacherUpdateDTO.class))).thenReturn(response);
+
+        mockMvc.perform(put("/api/v1/users/teachers/{id}", id)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateDTO)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Partial Name Update"))
+                .andExpect(jsonPath("$.email").value("original@test.com"));
+    }
 }
