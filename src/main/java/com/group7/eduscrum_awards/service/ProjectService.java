@@ -5,6 +5,7 @@ import java.util.List;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -54,4 +55,30 @@ public interface ProjectService {
      * @return List of dashboard DTOs.
      */
     List<StudentDashboardProjectDTO> getStudentDashboard(Long studentId);
+
+    /**
+     * Retrieves all projects for courses taught by a specific teacher.
+     *
+     * @param teacherId The ID of the teacher.
+     * @return List of ProjectSummaryDTOs.
+     */
+    List<ProjectSummaryDTO> getProjectsByTeacher(Long teacherId);
+
+    /**
+     * Retrieves detailed information about a specific project for teacher dashboard view.
+     * Includes project info, teams, sprints, and tasks.
+     *
+     * @param projectId The ID of the project.
+     * @return TeacherProjectDetailsDTO containing detailed project information.
+     * @throws ResourceNotFoundException if the project with the given ID is not found.
+     */
+    TeacherProjectDetailsDTO getProjectDetails(Long projectId);
+    
+    /**
+     * Counts the number of projects in a specific course.
+     *
+     * @param courseId The ID of the course.
+     * @return The count of projects in the course.
+     */
+    long countProjectsInCourse(Long courseId);
 }
