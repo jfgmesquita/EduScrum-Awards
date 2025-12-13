@@ -81,4 +81,23 @@ public interface ProjectService {
      * @return The count of projects in the course.
      */
     long countProjectsInCourse(Long courseId);
+
+    /**
+     * Retrieves a project by its ID.
+     * 
+     * @param projectId The ID of the project.
+     * @return The ProjectDTO.
+     * @throws ResourceNotFoundException if the project does not exist.
+     */
+    ProjectDTO getProjectById(Long projectId);
+    
+    /**
+     * Verifies if a teacher teaches the course associated with a specific project.
+     * Helper method for security checks.
+     * 
+     * @param projectId The ID of the project.
+     * @param teacherId The ID of the teacher.
+     * @return true if the teacher has access, false otherwise.
+     */
+    boolean isTeacherAllowedInProject(Long projectId, Long teacherId);
 }
