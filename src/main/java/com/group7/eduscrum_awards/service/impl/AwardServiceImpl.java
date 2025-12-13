@@ -90,7 +90,7 @@ public class AwardServiceImpl implements AwardService {
             Team team = teamRepository.findById(request.getTeamId())
                 .orElseThrow(() -> new ResourceNotFoundException("Team not found with id: " + request.getTeamId()));
             
-            // VTeam must belong to the project
+            // Team must belong to the project
             if (!team.getProject().getId().equals(project.getId())) {
                 throw new IllegalArgumentException("Team does not belong to the specified project.");
             }
