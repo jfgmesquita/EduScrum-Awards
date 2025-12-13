@@ -122,14 +122,11 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional(readOnly = true)
     public List<StudentDashboardProjectDTO> getStudentDashboard(Long studentId) {
-        // 1. Verify student exists (optional, but good practice)
         userRepository.findById(studentId)
             .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
 
-        // 2. Find all teams the student belongs to
         List<TeamMember> memberships = teamMemberRepository.findByStudentId(studentId);
 
-        // 3. Map memberships to Dashboard DTOs
         return memberships.stream()
             .map(member -> {
                 Project project = member.getTeam().getProject();

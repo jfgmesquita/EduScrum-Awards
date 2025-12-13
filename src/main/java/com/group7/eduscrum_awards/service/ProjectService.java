@@ -46,6 +46,12 @@ public interface ProjectService {
      */
     public List<ProjectSummaryDTO> getProjectsSummary(Long courseId);
 
-
+    /**
+     * Retrieves all projects for a specific student, including their role,
+     * team name, and all associated sprints and tasks.
+     *
+     * @param studentId The ID of the student.
+     * @return List of dashboard DTOs.
+     */
     List<StudentDashboardProjectDTO> getStudentDashboard(Long studentId);
 }
