@@ -73,18 +73,23 @@ public class RankingServiceImpl implements RankingService {
     @Transactional(readOnly = true)
     public StudentDashboardRankingDTO getStudentDashboardRankings(Long studentId) {
         
-        // Verify if the Student exists & fetch courses
+        // Fetch Student from repository
         Student student = (Student) userRepository.findById(studentId)
                 .filter(u -> u instanceof Student)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
 
+        if (student.getDegree() == null) {
+            throw new ResourceNotFoundException("Student is not enrolled in any degree.");
+        }
+
         StudentDashboardRankingDTO response = new StudentDashboardRankingDTO();
 
-        // Individual Rankings (Global)
-        List<StudentScoreSummary> globalSummaries = assignmentRepository.findGlobalStudentRankings();
+        // Individual Rankings by Degree
+        List<StudentScoreSummary> degreeSummaries = assignmentRepository.findStudentRankingsByDegreeId(student.getDegree().getId());
+        
         List<StudentScoreDTO> individualRankings = new ArrayList<>();
         int rank = 1;
-        for (StudentScoreSummary s : globalSummaries) {
+        for (StudentScoreSummary s : degreeSummaries) {
             individualRankings.add(new StudentScoreDTO(rank++, s.getStudentId(), s.getStudentName(), s.getTotalScore()));
         }
         response.setIndividualRankings(individualRankings);
@@ -97,13 +102,15 @@ public class RankingServiceImpl implements RankingService {
             courseDTO.setCourseId(course.getId());
             courseDTO.setCourseName(course.getName());
 
+            // Fetch Team Rankings for this Course
             List<TeamScoreSummary> teamSummaries = assignmentRepository.findTeamRankingsByCourseId(course.getId());
             List<TeamRankingDTO> teamRankings = new ArrayList<>();
             int teamRank = 1;
             
             for (TeamScoreSummary t : teamSummaries) {
-                // Get members for this team
-                List<StudentScoreSummary> members = assignmentRepository.findStudentScoresByTeamId(t.getTeamId());
+
+                List<StudentScoreSummary> members = assignmentRepository.findTeamMemberScores(t.getTeamId());
+                
                 List<TeamMemberScoreDTO> membersDTO = members.stream()
                         .map(m -> new TeamMemberScoreDTO(m.getStudentId(), m.getStudentName(), m.getTotalScore()))
                         .collect(Collectors.toList());
@@ -113,7 +120,7 @@ public class RankingServiceImpl implements RankingService {
                     t.getTeamId(), 
                     t.getTeamName(), 
                     t.getTotalScore(), 
-                    membersDTO.size(), 
+                    membersDTO.size(),
                     membersDTO
                 ));
             }
