@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.service;
 import java.util.List;
 
 import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
+import com.group7.eduscrum_awards.dto.TeacherUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
@@ -87,7 +88,7 @@ public interface UserService {
      * @throws ResourceNotFoundException when no user with the given ID exists
      * @throws IllegalArgumentException when the user is not a teacher
      */
-    UserDTO updateTeacher(Long id, com.group7.eduscrum_awards.dto.TeacherUpdateDTO dto);
+    UserDTO updateTeacher(Long id, TeacherUpdateDTO dto);
 
     /**
      * Retrieves all teachers teaching a specific course.
