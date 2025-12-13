@@ -95,4 +95,44 @@ class RankingControllerTest {
         mockMvc.perform(get("/api/v1/students/{studentId}/rankings", studentId))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("getStudentDashboardRankings | Should return 403 Forbidden on IDOR attempt")
+    @WithMockUser(username = "hacker@test.com")
+    void testGetStudentDashboardRankings_Forbidden() throws Exception {
+        Long targetStudentId = 5L;
+        String hackerEmail = "hacker@test.com";
+
+
+        com.group7.eduscrum_awards.dto.UserDTO hackerUser = new com.group7.eduscrum_awards.dto.UserDTO();
+        hackerUser.setId(99L);
+        hackerUser.setEmail(hackerEmail);
+        hackerUser.setRole(com.group7.eduscrum_awards.model.enums.Role.STUDENT);
+
+        when(userService.getUserByEmail(hackerEmail)).thenReturn(hackerUser);
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/rankings", targetStudentId))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("getStudentDashboardRankings | Should return 200 OK for Admin")
+    @WithMockUser(username = "admin@test.com", roles = "ADMIN")
+    void testGetStudentDashboardRankings_Admin() throws Exception {
+        Long targetStudentId = 5L;
+        String adminEmail = "admin@test.com";
+
+        com.group7.eduscrum_awards.dto.UserDTO adminUser = new com.group7.eduscrum_awards.dto.UserDTO();
+        adminUser.setId(1L);
+        adminUser.setEmail(adminEmail);
+        adminUser.setRole(com.group7.eduscrum_awards.model.enums.Role.ADMIN);
+
+        when(userService.getUserByEmail(adminEmail)).thenReturn(adminUser);
+        
+        // Mock Service success
+        when(rankingService.getStudentDashboardRankings(targetStudentId)).thenReturn(new com.group7.eduscrum_awards.dto.rankings.StudentDashboardRankingDTO());
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/rankings", targetStudentId))
+                .andExpect(status().isOk());
+    }
 }
