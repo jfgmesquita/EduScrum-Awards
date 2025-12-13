@@ -58,4 +58,42 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
            "WHERE p.course.id = :courseId " +
            "GROUP BY p.id, p.name, p.startDate, p.endDate")
     List<ProjectSummaryDTO> findProjectsWithTeamCount(@Param("courseId") Long courseId);
+
+    /**
+     * Finds all projects belonging to courses taught by a specific teacher.
+     * 
+     * @param teacherId The ID of the teacher.
+     * @return List of ProjectSummaryDTO.
+     */
+    @Query("SELECT new com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO(" +
+           "p.id, p.name, p.startDate, p.endDate, COUNT(t)) " +
+           "FROM Project p " +
+           "JOIN p.course c " +
+           "JOIN c.teachers tea " +
+           "LEFT JOIN p.teams t " +
+           "WHERE tea.id = :teacherId " +
+           "GROUP BY p.id, p.name, p.startDate, p.endDate")
+    List<ProjectSummaryDTO> findProjectsByTeacherId(@Param("teacherId") Long teacherId);
+
+    /**
+     * Fetches a project with its Sprints and Tasks eagerly to avoid N+1 issues.
+     * Note: Teams are NOT fetched here to avoid Cartesian Product performance hits.
+     * 
+     * @param projectId The ID of the project.
+     * @return Optional Project with sprints and tasks initialized.
+     */
+    @Query("SELECT DISTINCT p FROM Project p " +
+           "LEFT JOIN FETCH p.sprints s " +
+           "LEFT JOIN FETCH s.tasks t " +
+           "WHERE p.id = :projectId " +
+           "ORDER BY s.sprintNumber ASC")
+    Optional<Project> findProjectWithSprintsAndTasks(@Param("projectId") Long projectId);
+    
+    /**
+     * Counts the number of projects in a specific course.
+     * 
+     * @param courseId The ID of the course.
+     * @return The number of projects.
+     */
+    long countByCourseId(Long courseId);
 }
