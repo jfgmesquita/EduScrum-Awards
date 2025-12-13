@@ -13,18 +13,21 @@ public class DashboardTaskDTO {
     private Long id;
     private String description;
     private String status;
-    private Long assignedMemberId;
+    private Long assignedUserId;
+
     private String assignedMemberName;
 
     public DashboardTaskDTO(Task task) {
         this.id = task.getId();
         this.description = task.getDescription();
         this.status = task.getStatus().name();
+
         if (task.getTeamMember() != null) {
-            this.assignedMemberId = task.getTeamMember().getId();
-            // Check if the member has an associated student to get the name
+            // Verify if the TeamMember has an associated Student
             if (task.getTeamMember().getStudent() != null) {
                 this.assignedMemberName = task.getTeamMember().getStudent().getName();
+                // Set the assignedUserId only if a Student is associated
+                this.assignedUserId = task.getTeamMember().getStudent().getId();
             }
         }
     }
