@@ -14,4 +14,4 @@ import java.util.List;
 public class StudentDashboardRankingDTO {
     private List<StudentScoreDTO> individualRankings;
     private List<CourseRankingDTO> teamRankingsByCourse;
-}   
+}
