@@ -6,6 +6,7 @@ import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
+import com.group7.eduscrum_awards.dto.TeamMemberViewDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 
@@ -61,6 +62,16 @@ public interface TeamService {
      * @param taskId Optional Task ID.
      * @param userEmail The email of the logged-in user (to identify their team).
      * @return List of DeveloperDTO.
+     * @throws IllegalArgumentException if both sprintId and taskId are null.
      */
     List<DeveloperDTO> getDevelopersByContext(Long sprintId, Long taskId, String userEmail);
+
+    /**
+     * Retrieves all members of a specific team.
+     *
+     * @param teamId The ID of the team.
+     * @return List of TeamMemberViewDTO containing user details and roles.
+     * @throws ResourceNotFoundException if the team does not exist.
+     */
+    List<TeamMemberViewDTO> getTeamMembers(Long teamId);
 }
