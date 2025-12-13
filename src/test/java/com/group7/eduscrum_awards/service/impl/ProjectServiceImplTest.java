@@ -2,8 +2,10 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentTaskDTO;
+import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
@@ -18,6 +20,7 @@ import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
+import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +63,9 @@ class ProjectServiceImplTest {
 
     @Mock
     private TeamMemberRepository teamMemberRepository;
+
+    @Mock
+    private TeamRepository teamRepository;
 
     @InjectMocks
     private ProjectServiceImpl projectService;
@@ -284,5 +290,58 @@ class ProjectServiceImplTest {
         assertEquals(101L, dashboardTask.getId());
         assertEquals(50L, dashboardTask.getAssignedMemberId());
         assertEquals("Test Student", dashboardTask.getAssignedMemberName()); // Validate the new field
+    }
+
+    @Test
+    @DisplayName("getProjectsByTeacher | Should return list")
+    void testGetProjectsByTeacher() {
+        Long teacherId = 1L;
+        ProjectSummaryDTO summary = new ProjectSummaryDTO(1L, "P1", LocalDate.now(), LocalDate.now(), 2L);
+        
+        when(projectRepository.findProjectsByTeacherId(teacherId)).thenReturn(List.of(summary));
+
+        List<ProjectSummaryDTO> result = projectService.getProjectsByTeacher(teacherId);
+        
+        assertEquals(1, result.size());
+        verify(projectRepository).findProjectsByTeacherId(teacherId);
+    }
+
+    @Test
+    @DisplayName("countProjectsInCourse | Should return count")
+    void testCountProjectsInCourse() {
+        Long courseId = 10L;
+        when(projectRepository.countByCourseId(courseId)).thenReturn(5L);
+
+        long count = projectService.countProjectsInCourse(courseId);
+        assertEquals(5L, count);
+    }
+
+    @Test
+    @DisplayName("getProjectDetails | Should assemble full dashboard DTO")
+    void testGetProjectDetails() {
+        Long projectId = 10L;
+        
+        Project project = new Project();
+        project.setId(projectId);
+        project.setName("Details Project");
+        
+        Sprint sprint = new Sprint();
+        sprint.setSprintNumber(1);
+        project.addSprint(sprint);
+
+        when(projectRepository.findProjectWithSprintsAndTasks(projectId)).thenReturn(Optional.of(project));
+        
+        Team team = new Team("Team A", 1, project);
+        when(teamRepository.findByProjectId(projectId)).thenReturn(List.of(team));
+
+        TeacherProjectDetailsDTO result = projectService.getProjectDetails(projectId);
+
+        assertNotNull(result);
+        assertEquals("Details Project", result.getName());
+        assertEquals(1, result.getTeams().size());
+        assertEquals(1, result.getSprints().size());
+        
+        verify(projectRepository).findProjectWithSprintsAndTasks(projectId);
+        verify(teamRepository).findByProjectId(projectId);
     }
 }
