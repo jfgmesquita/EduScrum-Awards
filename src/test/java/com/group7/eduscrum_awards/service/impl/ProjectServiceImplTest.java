@@ -13,6 +13,7 @@ import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Sprint;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Task;
+import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.model.enums.TaskStatus;
@@ -343,5 +344,42 @@ class ProjectServiceImplTest {
         
         verify(projectRepository).findProjectWithSprintsAndTasks(projectId);
         verify(teamRepository).findByProjectId(projectId);
+    }
+
+    @Test
+    @DisplayName("getProjectById | Should return DTO when found")
+    void testGetProjectById() {
+        Long projectId = 10L;
+        Project project = new Project("Single Project", "Desc", existingCourse, LocalDate.now(), LocalDate.now());
+        project.setId(projectId);
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        ProjectDTO result = projectService.getProjectById(projectId);
+
+        assertNotNull(result);
+        assertEquals("Single Project", result.getName());
+    }
+
+    @Test
+    @DisplayName("isTeacherAllowedInProject | Should return true if teacher teaches the course")
+    void testIsTeacherAllowedInProject() {
+        Long projectId = 10L;
+        Long teacherId = 5L;
+
+        Teacher teacher = new Teacher();
+        teacher.setId(teacherId);
+
+        Course course = new Course("Course A");
+        course.getTeachers().add(teacher);
+
+        Project project = new Project();
+        project.setCourse(course);
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+        boolean allowed = projectService.isTeacherAllowedInProject(projectId, teacherId);
+
+        assertEquals(true, allowed);
     }
 }
