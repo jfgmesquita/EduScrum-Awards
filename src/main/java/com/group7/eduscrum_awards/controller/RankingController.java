@@ -1,11 +1,18 @@
 package com.group7.eduscrum_awards.controller;
 
 import com.group7.eduscrum_awards.dto.RankingItemDTO;
+import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.rankings.StudentDashboardRankingDTO;
+import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.RankingService;
+import com.group7.eduscrum_awards.service.UserService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 /**
@@ -17,10 +24,12 @@ import java.util.List;
 public class RankingController {
 
     private final RankingService rankingService;
+    private final UserService userService;
 
     @Autowired
-    public RankingController(RankingService rankingService) {
+    public RankingController(RankingService rankingService, UserService userService) {
         this.rankingService = rankingService;
+        this.userService = userService;
     }
 
     /**
@@ -39,5 +48,23 @@ public class RankingController {
     @GetMapping("/courses/{courseId}/rankings/teams")
     public ResponseEntity<List<RankingItemDTO>> getTeamRankings(@PathVariable Long courseId) {
         return ResponseEntity.ok(rankingService.getTeamRanking(courseId));
+    }
+
+    /**
+     * Get dashboard rankings for a specific Student.
+     * GET /api/v1/students/{studentId}/rankings
+     */
+    @GetMapping("/students/{studentId}/rankings")
+    public ResponseEntity<StudentDashboardRankingDTO> getStudentDashboardRankings(@PathVariable Long studentId,
+            Principal principal) {
+        
+        // IDOR Protection: Ensure logged-in user matches studentId (or is Admin)
+        String loggedInEmail = principal.getName();
+        UserDTO currentUser = userService.getUserByEmail(loggedInEmail);
+        if (!currentUser.getId().equals(studentId) && currentUser.getRole() != Role.ADMIN) {
+           return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        return ResponseEntity.ok(rankingService.getStudentDashboardRankings(studentId));
     }
 }

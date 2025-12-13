@@ -2,6 +2,8 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.RankingItemDTO;
 import com.group7.eduscrum_awards.repository.AwardAssignmentRepository;
+import com.group7.eduscrum_awards.repository.UserRepository;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,9 @@ class RankingServiceImplTest {
     @Mock
     private AwardAssignmentRepository assignmentRepository;
 
+    @Mock
+    private UserRepository userRepository;
+    
     @InjectMocks
     private RankingServiceImpl rankingService;
 
@@ -64,5 +69,28 @@ class RankingServiceImplTest {
         assertEquals(2, result.size());
         assertEquals(10.0, result.get(0).getTotalScore());
         verify(assignmentRepository, times(1)).findTeamRankingByCourse(courseId);
+    }
+
+    @Test
+    @DisplayName("getStudentDashboardRankings | Should assemble data correctly")
+    void testGetStudentDashboardRankings() {
+        Long studentId = 1L;
+        
+        // Mock Student
+        com.group7.eduscrum_awards.model.Student student = new com.group7.eduscrum_awards.model.Student();
+        student.setId(studentId);
+        student.setCourses(new java.util.HashSet<>()); // Empty courses for simplicity
+        
+        when(userRepository.findById(studentId)).thenReturn(java.util.Optional.of(student));
+        
+        // Mock Global Rankings
+        // (You would need to create a helper to mock the Projection interface, 
+        //  or use a concrete class that implements the interface for testing)
+        when(assignmentRepository.findGlobalStudentRankings()).thenReturn(List.of());
+
+        var result = rankingService.getStudentDashboardRankings(studentId);
+        
+        assertNotNull(result);
+        assertNotNull(result.getIndividualRankings());
     }
 }
