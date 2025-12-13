@@ -4,5 +4,6 @@ package com.group7.eduscrum_awards.model.enums;
 public enum TaskStatus {
     TODO,
     DOING,
+    REVIEW,
     DONE
 }
