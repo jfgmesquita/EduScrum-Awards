@@ -261,7 +261,7 @@ class ProjectServiceImplTest {
         Team team = new Team("Alpha Team", 1, project);
         
         TeamMember membership = new TeamMember();
-        membership.setId(50L);
+        membership.setId(50L); // TeamMember ID
         membership.setStudent(student);
         membership.setTeam(team);
         membership.setTeamRole(TeamRole.SCRUM_MASTER);
@@ -289,8 +289,11 @@ class ProjectServiceImplTest {
         var dashboardTask = result.get(0).getSprints().get(0).getTasks().get(0);
         
         assertEquals(101L, dashboardTask.getId());
-        assertEquals(50L, dashboardTask.getAssignedMemberId());
-        assertEquals("Test Student", dashboardTask.getAssignedMemberName()); // Validate the new field
+        
+        // CORREÇÃO: Agora validamos que devolve o studentId (1L) e não o membershipId (50L)
+        assertEquals(studentId, dashboardTask.getAssignedUserId()); 
+        
+        assertEquals("Test Student", dashboardTask.getAssignedMemberName());
     }
 
     @Test

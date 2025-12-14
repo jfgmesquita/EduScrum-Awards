@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.TaskCreateDTO;
 import com.group7.eduscrum_awards.dto.TaskDTO;
+import com.group7.eduscrum_awards.dto.TaskStatusDTO;
 import com.group7.eduscrum_awards.dto.TaskAssignDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Project;
@@ -10,6 +11,7 @@ import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Task;
 import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.model.User;
+import com.group7.eduscrum_awards.model.enums.TaskStatus;
 import com.group7.eduscrum_awards.model.enums.TeamRole;
 import com.group7.eduscrum_awards.repository.SprintRepository;
 import com.group7.eduscrum_awards.repository.TaskRepository;
@@ -94,39 +96,35 @@ public class TaskServiceImpl implements TaskService {
     @Transactional
     public TaskDTO assignTask(Long taskId, TaskAssignDTO assignDTO) {
         
-        // Find the Task to be assigned
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
 
-        // Find the target TeamMember (the Developer)
         TeamMember developer = teamMemberRepository.findById(assignDTO.getTeamMemberId())
             .orElseThrow(() -> new ResourceNotFoundException("TeamMember (Developer) not found with id: " + assignDTO.getTeamMemberId()));
 
-        // Get the Project from the task's sprint
         Project taskProject = task.getSprint().getProject();
         if (taskProject == null) {
             throw new IllegalStateException("Task's sprint is not associated with a project.");
         }
 
-        // Get the currently logged-in user (the Product Owner)
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (!(currentUser instanceof Student)) {
-            throw new AccessDeniedException("Only students (Product Owners) can assign tasks.");
+            throw new AccessDeniedException("Only students (Scrum Masters) can assign tasks.");
         }
         
-        // Authorization Check 1: Verify the logged-in user is the PO for this project
-        Student productOwner = (Student) currentUser;
-        boolean isProductOwner = teamMemberRepository.findByStudentAndProject(productOwner, taskProject)
-            .map(member -> member.getTeamRole() == TeamRole.PRODUCT_OWNER)
+        // Authorization Check 1: Verify the logged-in user is the SCRUM MASTER
+        Student scrumMaster = (Student) currentUser;
+        boolean isScrumMaster = teamMemberRepository.findByStudentAndProject(scrumMaster, taskProject)
+            .map(member -> member.getTeamRole() == TeamRole.SCRUM_MASTER)
             .orElse(false);
 
-        if (!isProductOwner) {
-            throw new AccessDeniedException("You are not the Product Owner for this project.");
+        if (!isScrumMaster) {
+            throw new AccessDeniedException("You are not the Scrum Master for this project.");
         }
 
         // Authorization Check 2: Verify the developer belongs to the same project
         if (!developer.getProject().getId().equals(taskProject.getId())) {
-            throw new IllegalArgumentException("The selected developer (TeamMemberId: " + developer.getId() + ") does not belong to this project.");
+            throw new IllegalArgumentException("The selected developer does not belong to this project.");
         }
         
         // Authorization Check 3: Verify the developer is a DEVELOPER
@@ -134,11 +132,51 @@ public class TaskServiceImpl implements TaskService {
              throw new IllegalArgumentException("The selected team member is not a Developer. Role: " + developer.getTeamRole());
         }
 
-        // All checks passed. Assign the task.
         task.setTeamMember(developer);
         Task savedTask = taskRepository.save(task);
 
-        // Return the updated DTO
+        return new TaskDTO(savedTask);
+    }
+
+    /**
+     * Updates the status of a task.
+     * Logic:
+     * - Moving to DONE: Only Product Owner can do it.
+     * - Other moves Team members can do it.
+     *
+     * @param taskId The ID of the task.
+     * @param statusDTO The new status.
+     * @return The updated TaskDTO.
+     * @throws ResourceNotFoundException if the taskId does not exist.
+     * @throws AccessDeniedException if the user is not authorized to make the status change.
+     */
+    @Override
+    @Transactional
+    public TaskDTO updateTaskStatus(Long taskId, TaskStatusDTO statusDTO) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
+        Project project = task.getSprint().getProject();
+        User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!(currentUser instanceof Student)) {
+             throw new AccessDeniedException("Only students in the team can update task status.");
+        }
+
+        // Get the role of the current user in this project
+        TeamMember currentMember = teamMemberRepository.findByStudentAndProject((Student) currentUser, project)
+                .orElseThrow(() -> new AccessDeniedException("You are not a member of this project."));
+
+        // RULE: Only Product Owner can move to DONE
+        if (statusDTO.getStatus() == TaskStatus.DONE) {
+            if (currentMember.getTeamRole() != TeamRole.PRODUCT_OWNER) {
+                throw new AccessDeniedException("Only the Product Owner can mark a task as DONE (Review passed).");
+            }
+        }
+
+        task.setStatus(statusDTO.getStatus());
+        Task savedTask = taskRepository.save(task);
+
         return new TaskDTO(savedTask);
     }
 }

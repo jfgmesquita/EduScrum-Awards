@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.controller;
 
 import com.group7.eduscrum_awards.dto.TaskCreateDTO;
 import com.group7.eduscrum_awards.dto.TaskDTO;
+import com.group7.eduscrum_awards.dto.TaskStatusDTO;
 import com.group7.eduscrum_awards.dto.TaskAssignDTO;
 import com.group7.eduscrum_awards.service.TaskService;
 import jakarta.validation.Valid;
@@ -59,5 +60,24 @@ public class TaskController {
         TaskDTO updatedTask = taskService.assignTask(taskId, assignDTO);
         // Return 200 OK with the updated task
         return new ResponseEntity<>(updatedTask, HttpStatus.OK);
+    }
+
+    /**
+     * Endpoint to update the status of a Task.
+     * Logic:
+     * - Moving to DONE: Only Product Owner can do it.
+     * - Other moves Team members can do it.
+     * Accessible via: PATCH /api/v1/tasks/{taskId}/status
+     *
+     * @param taskId The ID of the Task to be updated.
+     * @param statusDTO The JSON body containing the new status.
+     * @return A ResponseEntity containing the updated TaskDTO and HTTP status 200.
+     */
+    @PatchMapping("/tasks/{taskId}/status")
+    public ResponseEntity<TaskDTO> updateTaskStatus(@PathVariable Long taskId,
+            @Valid @RequestBody TaskStatusDTO statusDTO) {
+        
+        TaskDTO updatedTask = taskService.updateTaskStatus(taskId, statusDTO);
+        return ResponseEntity.ok(updatedTask);
     }
 }

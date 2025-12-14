@@ -11,6 +11,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
-    
     // We can custom queries later if needed (e.g., findAllBySprint(Sprint sprint))
 }
