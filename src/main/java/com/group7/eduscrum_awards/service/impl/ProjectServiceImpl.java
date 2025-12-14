@@ -1,5 +1,6 @@
 package com.group7.eduscrum_awards.service.impl;
 
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.DashboardSprintDTO;
@@ -295,5 +296,19 @@ public class ProjectServiceImpl implements ProjectService {
         dto.setTotalStudents(userRepository.countByDegreeIdAndRole(degreeId, Role.STUDENT));
 
         return dto;
+    }
+
+    /**
+     * Retrieves the course name and number of teams for a specific project.
+     *
+     * @param projectId The ID of the project.
+     * @return an {@link ProjectCourseTeamsDTO}.
+     * @throws ResourceNotFoundException if the project does not exist.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectCourseTeamsDTO getProjectCourseAndTeamCount(Long projectId) {
+        return projectRepository.findCourseNameAndTeamCountByProjectId(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
     }
 }
