@@ -6,6 +6,7 @@ import com.group7.eduscrum_awards.dto.AwardAssignmentRequestDTO;
 import com.group7.eduscrum_awards.dto.AwardCreateDTO;
 import com.group7.eduscrum_awards.dto.AwardDTO;
 import com.group7.eduscrum_awards.dto.StudentAwardDTO;
+import com.group7.eduscrum_awards.model.enums.AwardScope;
 import com.group7.eduscrum_awards.service.AwardService;
 import com.group7.eduscrum_awards.service.JwtService;
 import jakarta.servlet.FilterChain;
@@ -59,11 +60,13 @@ class AwardControllerTest {
         createDTO.setName("Best Coder");
         createDTO.setDescription("For excellent code");
         createDTO.setPoints(5); 
+        createDTO.setScope(AwardScope.STUDENT);
 
         AwardDTO responseDTO = new AwardDTO();
         responseDTO.setId(10L);
         responseDTO.setName("Best Coder");
         responseDTO.setPoints(5);
+        responseDTO.setScope(AwardScope.STUDENT);
 
         when(awardService.createCustomAward(eq(courseId), any(AwardCreateDTO.class))).thenReturn(responseDTO);
 
