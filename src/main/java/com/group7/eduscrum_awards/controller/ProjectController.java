@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.controller;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
@@ -164,5 +165,27 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(projectService.getProjectById(id));
+    }
+
+    /**
+     * Endpoint to retrieve the student dashboard data including stats for the 4 cards at the top.
+     * Accessible via: GET /api/v1/students/{studentId}/dashboard
+     *
+     * @param studentId The ID of the student.
+     * @param principal The security principal (to verify identity).
+     * @return A ResponseEntity containing the StudentDashboardDTO with stats and projects.
+     */
+    @GetMapping("/students/{studentId}/dashboard")
+    public ResponseEntity<StudentDashboardDTO> getStudentStats(
+        @PathVariable Long studentId, Principal principal) {
+        
+        String loggedEmail = principal.getName();
+        UserDTO loggedUser = userService.getUserByEmail(loggedEmail);
+        if (!loggedUser.getId().equals(studentId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    
+        StudentDashboardDTO dashboard = projectService.getStudentDashboardWithStats(studentId);
+        return ResponseEntity.ok(dashboard);
     }
 }
