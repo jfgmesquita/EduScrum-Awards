@@ -1,13 +1,17 @@
 package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.StudentUpdateDTO;
+import com.group7.eduscrum_awards.dto.TeacherUpdateDTO;
 import com.group7.eduscrum_awards.dto.UserCreateDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.User;
+import com.group7.eduscrum_awards.repository.CourseRepository;
+import com.group7.eduscrum_awards.repository.DegreeRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 
 import java.util.Optional;
@@ -44,6 +48,12 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private CourseRepository courseRepository;
+
+    @Mock
+    private DegreeRepository degreeRepository;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -298,5 +308,162 @@ class UserServiceImplTest {
 
         assertEquals("User not found", exception.getMessage());
         verify(userRepository, times(1)).findByEmail(email);
+    }
+
+    // Tests for getUserById
+
+    @Test
+    @DisplayName("getUserById | Should return UserDTO when found")
+    void testGetUserById_Success() {
+        Long userId = 1L;
+        when(userRepository.findById(userId)).thenReturn(Optional.of(savedUser));
+
+        UserDTO result = userService.getUserById(userId);
+
+        assertNotNull(result);
+        assertEquals(userId, result.getId());
+        assertEquals(savedUser.getEmail(), result.getEmail());
+        verify(userRepository).findById(userId);
+    }
+
+    @Test
+    @DisplayName("getUserById | Should throw ResourceNotFoundException when not found")
+    void testGetUserById_NotFound() {
+        Long userId = 99L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> userService.getUserById(userId)
+        );
+
+        assertEquals("User not found: " + userId, exception.getMessage());
+        verify(userRepository).findById(userId);
+    }
+
+    // Tests for updateTeacher
+
+    @Test
+    @DisplayName("updateTeacher | Should update name and email successfully")
+    void testUpdateTeacher_Success() {
+        Long teacherId = 2L;
+        TeacherUpdateDTO updateDTO = new TeacherUpdateDTO();
+        updateDTO.setName("Prof. Updated");
+        updateDTO.setEmail("updated@prof.com");
+
+        Teacher existingTeacher = new Teacher("Prof. Original", "original@prof.com", "pass");
+        existingTeacher.setId(teacherId);
+
+        when(userRepository.findById(teacherId)).thenReturn(Optional.of(existingTeacher));
+        // Mock unique email check (empty means no other user has this email)
+        when(userRepository.findByEmail("updated@prof.com")).thenReturn(Optional.empty());
+        when(userRepository.save(any(Teacher.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        UserDTO result = userService.updateTeacher(teacherId, updateDTO);
+
+        assertNotNull(result);
+        assertEquals("Prof. Updated", result.getName());
+        assertEquals("updated@prof.com", result.getEmail());
+        verify(userRepository).save(existingTeacher);
+    }
+
+    @Test
+    @DisplayName("updateTeacher | Should throw DuplicateResourceException on duplicate email")
+    void testUpdateTeacher_DuplicateEmail() {
+        Long teacherId = 2L;
+        TeacherUpdateDTO updateDTO = new TeacherUpdateDTO();
+        updateDTO.setEmail("taken@test.com");
+
+        Teacher existingTeacher = new Teacher("Prof. Test", "original@test.com", "pass");
+        existingTeacher.setId(teacherId);
+
+        // Another user already has this email
+        User duplicateUser = new User();
+        duplicateUser.setId(99L);
+
+        when(userRepository.findById(teacherId)).thenReturn(Optional.of(existingTeacher));
+        when(userRepository.findByEmail("taken@test.com")).thenReturn(Optional.of(duplicateUser));
+
+        DuplicateResourceException exception = assertThrows(
+            DuplicateResourceException.class,
+            () -> userService.updateTeacher(teacherId, updateDTO)
+        );
+
+        assertEquals("Email already in use", exception.getMessage());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateTeacher | Should throw IllegalArgumentException if user is not a Teacher")
+    void testUpdateTeacher_Failure_NotATeacher() {
+        Long id = 1L;
+        // Find a Student instead of a Teacher
+        Student student = new Student("Student", "s@test.com", "pass");
+        student.setId(id);
+        
+        when(userRepository.findById(id)).thenReturn(Optional.of(student));
+
+        TeacherUpdateDTO dto = new TeacherUpdateDTO();
+        dto.setName("New Name");
+
+        IllegalArgumentException exception = assertThrows(
+            IllegalArgumentException.class,
+            () -> userService.updateTeacher(id, dto)
+        );
+
+        assertEquals("User is not a Teacher", exception.getMessage());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateTeacher | Should throw ResourceNotFoundException when user not found")
+    void testUpdateTeacher_Failure_NotFound() {
+        Long id = 99L;
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        TeacherUpdateDTO dto = new TeacherUpdateDTO();
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> userService.updateTeacher(id, dto)
+        );
+
+        assertEquals("User not found: " + id, exception.getMessage());
+    }
+
+    // Tests for getTeachersByCourse
+
+    @Test
+    @DisplayName("getTeachersByCourse | Should return list of teachers")
+    void testGetTeachersByCourse_Success() {
+        Long courseId = 10L;
+        com.group7.eduscrum_awards.model.Course course = new com.group7.eduscrum_awards.model.Course("Math");
+        course.setId(courseId);
+
+        Teacher t1 = new Teacher("T1", "t1@test.com", "pass");
+        course.getTeachers().add(t1);
+
+        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
+
+        List<UserDTO> result = userService.getTeachersByCourse(courseId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("T1", result.get(0).getName());
+        verify(courseRepository).findById(courseId);
+    }
+
+    @Test
+    @DisplayName("getTeachersByCourse | Should throw ResourceNotFoundException when Course not found")
+    void testGetTeachersByCourse_Failure_NotFound() {
+        Long courseId = 99L;
+        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> userService.getTeachersByCourse(courseId)
+        );
+
+        assertEquals("Course not found: " + courseId, exception.getMessage());
     }
 }
