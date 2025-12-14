@@ -3,6 +3,7 @@ package com.group7.eduscrum_awards.service.impl;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.DashboardSprintDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeamDTO;
@@ -15,6 +16,10 @@ import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
+import com.group7.eduscrum_awards.model.enums.AwardType;
+import com.group7.eduscrum_awards.model.enums.Role;
+import com.group7.eduscrum_awards.model.enums.TaskStatus;
+import com.group7.eduscrum_awards.repository.AwardAssignmentRepository;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
@@ -41,16 +46,18 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserRepository userRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
+    private final AwardAssignmentRepository awardAssignmentRepository;
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository, CourseRepository courseRepository, 
                               UserRepository userRepository, TeamMemberRepository teamMemberRepository,
-                              TeamRepository teamRepository) {
+                              TeamRepository teamRepository, AwardAssignmentRepository awardAssignmentRepository) {
         this.projectRepository = projectRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
         this.teamMemberRepository = teamMemberRepository;
         this.teamRepository = teamRepository;
+        this.awardAssignmentRepository = awardAssignmentRepository;
     }
 
     /** Creates a new project for a specific course. */
@@ -240,5 +247,50 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(project -> project.getCourse().getTeachers().stream()
                         .anyMatch(t -> t.getId().equals(teacherId)))
                 .orElse(false);
+    }
+
+    /**
+     * Retrieves the student dashboard data for the 4 cards at the top.
+     * 
+     * @param studentId The ID of the student.
+     * @return The StudentDashboardDTO with stats and projects.
+     * @throws ResourceNotFoundException if the student does not exist.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public StudentDashboardDTO getStudentDashboardWithStats(Long studentId) {
+
+        // Validate Student existence
+        Student student = (Student) userRepository.findById(studentId)
+            .filter(u -> u instanceof Student)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
+
+        Long degreeId = student.getDegree().getId();
+
+        // Fetch projects for the student
+        List<StudentDashboardProjectDTO> projects = getStudentDashboard(studentId);
+
+        // Assemble DTO
+        StudentDashboardDTO dto = new StudentDashboardDTO();
+        dto.setProjects(projects);
+
+        // Card 1: Score
+        long myScore = awardAssignmentRepository.calculateTotalScore(studentId);
+        dto.setTotalScore(myScore);
+
+        // Card 2: Awards
+        dto.setTotalAwards(awardAssignmentRepository.countByStudentId(studentId));
+        dto.setManualAwards(awardAssignmentRepository.countByStudentAndType(studentId, AwardType.MANUAL));
+        dto.setAutomaticAwards(awardAssignmentRepository.countByStudentAndType(studentId, AwardType.AUTOMATIC));
+
+        // Card 3: Tasks
+        dto.setTasksCompleted(teamMemberRepository.countTasksByStudentTeamsAndStatus(studentId, TaskStatus.DONE));
+        dto.setTasksTotal(teamMemberRepository.countAllTasksByStudentTeams(studentId));
+
+        // Card 4: Ranking
+        dto.setRanking(userRepository.calculateStudentRankInDegree(myScore, degreeId));
+        dto.setTotalStudents(userRepository.countByDegreeIdAndRole(degreeId, Role.STUDENT));
+
+        return dto;
     }
 }
