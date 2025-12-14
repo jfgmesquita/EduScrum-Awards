@@ -1,8 +1,11 @@
 package com.group7.eduscrum_awards.dto;
 
+import com.group7.eduscrum_awards.model.enums.AwardScope;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,4 +25,7 @@ public class AwardCreateDTO {
     @Min(value = 1, message = "Points must be at least 1.")
     @Max(value = 5, message = "Points cannot exceed 5.")
     private int points;
+
+    @NotNull(message = "Scope is required (STUDENT or TEAM)")
+    private AwardScope scope;
 }
