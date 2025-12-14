@@ -5,7 +5,6 @@ import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
-import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.ProjectService;
@@ -57,41 +56,15 @@ public class ProjectController {
     }
 
     /**
-     * Endpoint to retrieve all projects associated with a specific student.
-     * Each project includes only the sprints and tasks relevant to that student.
-     * Accessible via: GET /api/v1/students/{studentId}/projects
-     *
-     * @param studentId The ID of the student (from the URL path).
-     * @return A ResponseEntity containing a list of StudentProjectDTOs.
-     */
-    @GetMapping("/students/{studentId}/projects")
-    public ResponseEntity<List<StudentProjectDTO>> getStudentProjects(
-            @PathVariable Long studentId, Principal principal) {
-
-        // Check who is the logged-in user
-        String loggedUsername = principal.getName();
-        UserDTO loggedUser = userService.getUserByEmail(loggedUsername);
-        
-        // Validate if the logged-in user is the owner of the data
-        boolean isOwner = loggedUser.getId().equals(studentId);
-
-        if (!isOwner) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        return ResponseEntity.ok(projectService.getMyProjects(studentId));
-    }
-
-    /**
      * Endpoint for the Student Dashboard.
      * Returns all projects, roles, sprints, and tasks for the logged-in student.
-     * Accessible via: GET /api/v1/students/{studentId}/dashboard
+     * Accessible via: GET /api/v1/students/{studentId}/projects
      *
      * @param studentId The ID of the student.
      * @param principal The security principal (to verify identity).
      * @return List of detailed project info.
      */
-    @GetMapping("/students/{studentId}/dashboard")
+    @GetMapping("/students/{studentId}/projects")
     public ResponseEntity<List<StudentDashboardProjectDTO>> getStudentDashboard(@PathVariable Long studentId,
             Principal principal) {
 
