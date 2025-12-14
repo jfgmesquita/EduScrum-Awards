@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentTaskDTO;
@@ -9,6 +10,7 @@ import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.Course;
+import com.group7.eduscrum_awards.model.Degree;
 import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Sprint;
 import com.group7.eduscrum_awards.model.Student;
@@ -16,8 +18,11 @@ import com.group7.eduscrum_awards.model.Task;
 import com.group7.eduscrum_awards.model.Teacher;
 import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
+import com.group7.eduscrum_awards.model.enums.AwardType;
+import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.model.enums.TaskStatus;
 import com.group7.eduscrum_awards.model.enums.TeamRole;
+import com.group7.eduscrum_awards.repository.AwardAssignmentRepository;
 import com.group7.eduscrum_awards.repository.CourseRepository;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
@@ -67,6 +72,9 @@ class ProjectServiceImplTest {
 
     @Mock
     private TeamRepository teamRepository;
+
+    @Mock
+    private AwardAssignmentRepository awardAssignmentRepository;
 
     @InjectMocks
     private ProjectServiceImpl projectService;
@@ -384,5 +392,44 @@ class ProjectServiceImplTest {
         boolean allowed = projectService.isTeacherAllowedInProject(projectId, teacherId);
 
         assertEquals(true, allowed);
+    }
+
+    @Test
+    @DisplayName("getStudentDashboardWithStats | Should return aggregated statistics and projects")
+    void testGetStudentDashboardWithStats() {
+
+        Long studentId = 1L;
+        Long degreeId = 10L;
+        
+        Degree degree = new Degree();
+        degree.setId(degreeId);
+        
+        Student student = new Student("John", "john@test.com", "pass");
+        student.setId(studentId);
+        student.setDegree(degree);
+
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
+        when(teamMemberRepository.findByStudentId(studentId)).thenReturn(List.of()); 
+
+        when(awardAssignmentRepository.calculateTotalScore(studentId)).thenReturn(365L);
+        when(awardAssignmentRepository.countByStudentId(studentId)).thenReturn(5);
+        when(awardAssignmentRepository.countByStudentAndType(studentId, AwardType.MANUAL)).thenReturn(3);
+        when(awardAssignmentRepository.countByStudentAndType(studentId, AwardType.AUTOMATIC)).thenReturn(2);
+        
+        when(teamMemberRepository.countTasksByStudentTeamsAndStatus(studentId, TaskStatus.DONE)).thenReturn(24L);
+        
+        when(teamMemberRepository.countAllTasksByStudentTeams(studentId)).thenReturn(30L);
+        when(userRepository.calculateStudentRankInDegree(365L, degreeId)).thenReturn(3);
+        when(userRepository.countByDegreeIdAndRole(degreeId, Role.STUDENT)).thenReturn(45L);
+
+        StudentDashboardDTO result = projectService.getStudentDashboardWithStats(studentId);
+
+        assertNotNull(result);
+        assertEquals(365L, result.getTotalScore());
+        assertEquals(24L, result.getTasksCompleted());
+        assertEquals(30L, result.getTasksTotal());
+        assertEquals(3, result.getRanking());
+        
+        verify(teamMemberRepository).countTasksByStudentTeamsAndStatus(studentId, TaskStatus.DONE);
     }
 }
