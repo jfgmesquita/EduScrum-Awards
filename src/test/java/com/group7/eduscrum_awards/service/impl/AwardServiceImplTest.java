@@ -9,7 +9,13 @@ import com.group7.eduscrum_awards.model.*;
 import com.group7.eduscrum_awards.model.enums.AwardScope;
 import com.group7.eduscrum_awards.model.enums.AwardType;
 import com.group7.eduscrum_awards.model.enums.TeamRole;
-import com.group7.eduscrum_awards.repository.*;
+import com.group7.eduscrum_awards.repository.AwardAssignmentRepository;
+import com.group7.eduscrum_awards.repository.AwardRepository;
+import com.group7.eduscrum_awards.repository.CourseRepository;
+import com.group7.eduscrum_awards.repository.ProjectRepository;
+import com.group7.eduscrum_awards.repository.TeamRepository;
+import com.group7.eduscrum_awards.repository.UserRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -96,6 +102,7 @@ class AwardServiceImplTest {
         createDTO.setName("New Award");
         createDTO.setDescription("Description");
         createDTO.setPoints(5);
+        createDTO.setScope(AwardScope.STUDENT); // Default for setup
 
         assignmentRequest = new AwardAssignmentRequestDTO();
         assignmentRequest.setProjectId(10L);
@@ -104,8 +111,11 @@ class AwardServiceImplTest {
     // Tests for createCustomAward
 
     @Test
-    @DisplayName("createCustomAward | Should create award successfully")
-    void testCreateCustomAward_Success() {
+    @DisplayName("createCustomAward | Should create award with STUDENT scope")
+    void testCreateCustomAward_StudentScope() {
+
+        createDTO.setScope(AwardScope.STUDENT);
+
         when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
         when(awardRepository.save(any(Award.class))).thenAnswer(i -> {
             Award a = i.getArgument(0);
@@ -119,6 +129,30 @@ class AwardServiceImplTest {
         assertEquals(99L, result.getId());
         assertEquals("New Award", result.getName());
         assertEquals(AwardType.MANUAL, result.getType());
+        assertEquals(AwardScope.STUDENT, result.getScope());
+        
+        verify(courseRepository).findById(1L);
+        verify(awardRepository).save(any(Award.class));
+    }
+
+    @Test
+    @DisplayName("createCustomAward | Should create award with TEAM scope")
+    void testCreateCustomAward_TeamScope() {
+        createDTO.setScope(AwardScope.TEAM);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(awardRepository.save(any(Award.class))).thenAnswer(i -> {
+            Award a = i.getArgument(0);
+            a.setId(100L);
+            return a;
+        });
+
+        AwardDTO result = awardService.createCustomAward(1L, createDTO);
+
+        assertNotNull(result);
+        assertEquals(100L, result.getId());
+        assertEquals("New Award", result.getName());
+        assertEquals(AwardScope.TEAM, result.getScope());
         
         verify(courseRepository).findById(1L);
         verify(awardRepository).save(any(Award.class));
@@ -234,6 +268,7 @@ class AwardServiceImplTest {
     }
 
     // Tests for getStudentAwards
+
     @Test
     @DisplayName("getStudentAwards | Should return awards assigned to Student")
     void testGetStudentAwards_Success() {
