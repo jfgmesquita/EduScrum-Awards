@@ -63,4 +63,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return a list of users with the specified role
      */
     List<User> findAllByRole(Role role);
+
+    /**
+     * Calculates the rank of a student within their degree based on total score.
+     * 
+     * @param myScore the total score of the student
+     * @param degreeId the ID of the degree
+     * @return the rank of the student within the degree
+     */
+    @Query("SELECT COUNT(s) + 1 FROM Student s " +
+           "WHERE s.degree.id = :degreeId " +
+           "AND s.role = 'STUDENT' " +
+           "AND (SELECT COALESCE(SUM(a.points), 0) FROM AwardAssignment aa JOIN aa.award a WHERE aa.student = s) > :myScore")
+    int calculateStudentRankInDegree(@Param("myScore") long myScore, @Param("degreeId") Long degreeId);
 }

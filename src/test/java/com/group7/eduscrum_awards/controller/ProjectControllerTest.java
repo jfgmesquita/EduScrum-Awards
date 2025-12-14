@@ -2,15 +2,15 @@ package com.group7.eduscrum_awards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
-import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
-import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.JwtService;
 import com.group7.eduscrum_awards.service.ProjectService;
@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -103,32 +104,6 @@ class ProjectControllerTest {
     }
 
     @Test
-    @DisplayName("getStudentProjects | Should return list when User is Owner")
-    @WithMockUser(username = "student@test.com", roles = "STUDENT")
-    void testGetStudentProjects_Success() throws Exception {
-        Long studentId = 5L;
-
-        UserDTO mockUser = new UserDTO();
-        mockUser.setId(studentId);
-        mockUser.setName("Student Name");
-
-        when(userService.getUserByEmail("student@test.com")).thenReturn(mockUser);
-
-        Project dummyProject = new Project();
-        dummyProject.setId(20L);
-        dummyProject.setName("Student Project");
-        StudentProjectDTO dto = new StudentProjectDTO(dummyProject, studentId);
-
-        when(projectService.getMyProjects(studentId)).thenReturn(List.of(dto));
-
-        mockMvc.perform(get("/api/v1/students/{studentId}/projects", studentId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].id").value(20L));
-    }
-
-    @Test
     @DisplayName("getStudentProjects | Should return 403 Forbidden when accessing another student data")
     @WithMockUser(username = "hacker@test.com", roles = "STUDENT")
     void testGetStudentProjects_Forbidden() throws Exception {
@@ -147,25 +122,7 @@ class ProjectControllerTest {
     }
 
     @Test
-    @DisplayName("getStudentProjects | Should return 404 when student not found (even if authorized)")
-    @WithMockUser(username = "student@test.com", roles = "STUDENT")
-    void testGetStudentProjects_NotFound() throws Exception {
-        Long studentId = 5L;
-
-        UserDTO mockUser = new UserDTO();
-        mockUser.setId(studentId);
-        when(userService.getUserByEmail("student@test.com")).thenReturn(mockUser);
-
-        when(projectService.getMyProjects(studentId))
-            .thenThrow(new ResourceNotFoundException("Student projects not found"));
-
-        mockMvc.perform(get("/api/v1/students/{studentId}/projects", studentId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @DisplayName("getStudentDashboard | Should return 200 OK with data")
+    @DisplayName("getStudentProjects | Should return 200 OK with data")
     @WithMockUser(username = "student@test.com", roles = "STUDENT")
     void testGetStudentDashboard() throws Exception {
         Long studentId = 5L;
@@ -180,7 +137,7 @@ class ProjectControllerTest {
         
         when(projectService.getStudentDashboard(studentId)).thenReturn(List.of(dashboardDTO));
 
-        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", studentId)
+        mockMvc.perform(get("/api/v1/students/{studentId}/projects", studentId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].projectName").value("Dashboard Project"))
@@ -188,7 +145,7 @@ class ProjectControllerTest {
     }
 
     @Test
-    @DisplayName("getStudentDashboard | Should return 403 Forbidden on IDOR attempt")
+    @DisplayName("getStudentProjects | Should return 403 Forbidden on IDOR attempt")
     @WithMockUser(username = "hacker@test.com", roles = "STUDENT")
     void testGetStudentDashboard_Forbidden() throws Exception {
         Long targetId = 5L;
@@ -198,7 +155,7 @@ class ProjectControllerTest {
         hackerUser.setId(hackerId);
         when(userService.getUserByEmail("hacker@test.com")).thenReturn(hackerUser);
 
-        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", targetId)
+        mockMvc.perform(get("/api/v1/students/{studentId}/projects", targetId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
@@ -326,5 +283,83 @@ class ProjectControllerTest {
                 .andExpect(status().isForbidden());
                 
         verify(projectService, never()).getProjectById(any());
+    }
+
+    @Test
+    @DisplayName("getStudentStats | Should return 200 OK when user is authorized")
+    @WithMockUser(username = "john@test.com", roles = "STUDENT")
+    void testGetStudentStats_Success() throws Exception {
+        Long studentId = 1L;
+        
+        // Mock User Service for IDOR check
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(studentId);
+        userDTO.setEmail("john@test.com");
+        when(userService.getUserByEmail("john@test.com")).thenReturn(userDTO);
+
+        // Mock Service response
+        StudentDashboardDTO dashboardDTO = new StudentDashboardDTO();
+        dashboardDTO.setTotalScore(100L);
+        when(projectService.getStudentDashboardWithStats(studentId)).thenReturn(dashboardDTO);
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", studentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalScore").value(100));
+    }
+
+    @Test
+    @DisplayName("getStudentStats | Should return 403 Forbidden when IDOR detected")
+    @WithMockUser(username = "hacker@test.com", roles = "STUDENT")
+    void testGetStudentStats_Forbidden_IDOR() throws Exception {
+        Long targetStudentId = 1L;
+        Long hackerId = 99L;
+
+        // Mock User Service returning a different ID than the requested one
+        UserDTO hackerUser = new UserDTO();
+        hackerUser.setId(hackerId);
+        hackerUser.setEmail("hacker@test.com");
+        when(userService.getUserByEmail("hacker@test.com")).thenReturn(hackerUser);
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", targetStudentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+        
+        verify(projectService, never()).getStudentDashboardWithStats(anyLong());
+    }
+
+    @Test
+    @DisplayName("getProjectCourseAndTeamCount | Should return 200 OK and DTO when project exists")
+    @WithMockUser(username = "teacher@test.com", roles = "TEACHER")
+    void testGetProjectCourseAndTeamCount_Success() throws Exception {
+        Long projectId = 1L;
+        ProjectCourseTeamsDTO expectedDTO = new ProjectCourseTeamsDTO("Software Engineering", 5L);
+
+        when(projectService.getProjectCourseAndTeamCount(projectId)).thenReturn(expectedDTO);
+
+        mockMvc.perform(get("/api/v1/projects/{projectId}/course-teams", projectId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.courseName").value("Software Engineering"))
+                .andExpect(jsonPath("$.numberOfTeams").value(5));
+        
+        verify(projectService).getProjectCourseAndTeamCount(projectId);
+    }
+
+    @Test
+    @DisplayName("getProjectCourseAndTeamCount | Should return 404 Not Found when project does not exist")
+    @WithMockUser(username = "teacher@test.com", roles = "TEACHER")
+    void testGetProjectCourseAndTeamCount_NotFound() throws Exception {
+
+        Long projectId = 99L;
+
+        when(projectService.getProjectCourseAndTeamCount(projectId))
+                .thenThrow(new ResourceNotFoundException("Project not found"));
+
+        mockMvc.perform(get("/api/v1/projects/{projectId}/course-teams", projectId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        
+        verify(projectService).getProjectCourseAndTeamCount(projectId);
     }
 }

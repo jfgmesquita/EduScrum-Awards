@@ -2,8 +2,10 @@ package com.group7.eduscrum_awards.service;
 
 import java.util.List;
 
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
@@ -100,4 +102,22 @@ public interface ProjectService {
      * @return true if the teacher has access, false otherwise.
      */
     boolean isTeacherAllowedInProject(Long projectId, Long teacherId);
+
+    /**
+     * Retrieves the student dashboard data for the 4 cards at the top.
+     * 
+     * @param studentId The ID of the student.
+     * @return The StudentDashboardDTO with stats and projects.
+     * @throws ResourceNotFoundException if the student does not exist.
+     */
+    public StudentDashboardDTO getStudentDashboardWithStats(Long studentId);
+
+    /**
+     * Retrieves the course name and number of teams for a specific project.
+     *
+     * @param projectId The ID of the project.
+     * @return an {@link ProjectCourseTeamsDTO}.
+     * @throws ResourceNotFoundException if the project does not exist.
+     */
+    public ProjectCourseTeamsDTO getProjectCourseAndTeamCount(Long projectId);
 }

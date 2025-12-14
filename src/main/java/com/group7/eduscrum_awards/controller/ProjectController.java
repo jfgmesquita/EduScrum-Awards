@@ -1,11 +1,12 @@
 package com.group7.eduscrum_awards.controller;
 
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
-import com.group7.eduscrum_awards.dto.studentdashboard.StudentProjectDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.ProjectService;
@@ -57,41 +58,15 @@ public class ProjectController {
     }
 
     /**
-     * Endpoint to retrieve all projects associated with a specific student.
-     * Each project includes only the sprints and tasks relevant to that student.
-     * Accessible via: GET /api/v1/students/{studentId}/projects
-     *
-     * @param studentId The ID of the student (from the URL path).
-     * @return A ResponseEntity containing a list of StudentProjectDTOs.
-     */
-    @GetMapping("/students/{studentId}/projects")
-    public ResponseEntity<List<StudentProjectDTO>> getStudentProjects(
-            @PathVariable Long studentId, Principal principal) {
-
-        // Check who is the logged-in user
-        String loggedUsername = principal.getName();
-        UserDTO loggedUser = userService.getUserByEmail(loggedUsername);
-        
-        // Validate if the logged-in user is the owner of the data
-        boolean isOwner = loggedUser.getId().equals(studentId);
-
-        if (!isOwner) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-        }
-
-        return ResponseEntity.ok(projectService.getMyProjects(studentId));
-    }
-
-    /**
      * Endpoint for the Student Dashboard.
      * Returns all projects, roles, sprints, and tasks for the logged-in student.
-     * Accessible via: GET /api/v1/students/{studentId}/dashboard
+     * Accessible via: GET /api/v1/students/{studentId}/projects
      *
      * @param studentId The ID of the student.
      * @param principal The security principal (to verify identity).
      * @return List of detailed project info.
      */
-    @GetMapping("/students/{studentId}/dashboard")
+    @GetMapping("/students/{studentId}/projects")
     public ResponseEntity<List<StudentDashboardProjectDTO>> getStudentDashboard(@PathVariable Long studentId,
             Principal principal) {
 
@@ -191,5 +166,39 @@ public class ProjectController {
         }
 
         return ResponseEntity.ok(projectService.getProjectById(id));
+    }
+
+    /**
+     * Endpoint to retrieve the student dashboard data including stats for the 4 cards at the top.
+     * Accessible via: GET /api/v1/students/{studentId}/dashboard
+     *
+     * @param studentId The ID of the student.
+     * @param principal The security principal (to verify identity).
+     * @return A ResponseEntity containing the StudentDashboardDTO with stats and projects.
+     */
+    @GetMapping("/students/{studentId}/dashboard")
+    public ResponseEntity<StudentDashboardDTO> getStudentStats(
+        @PathVariable Long studentId, Principal principal) {
+        
+        String loggedEmail = principal.getName();
+        UserDTO loggedUser = userService.getUserByEmail(loggedEmail);
+        if (!loggedUser.getId().equals(studentId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+    
+        StudentDashboardDTO dashboard = projectService.getStudentDashboardWithStats(studentId);
+        return ResponseEntity.ok(dashboard);
+    }
+
+    /**
+     * Endpoint to retrieve the course name and number of teams for a specific project.
+     * Accessible via: GET /api/v1/projects/{projectId}/course-teams
+     *
+     * @param projectId The ID of the project.
+     * @return A ResponseEntity containing the ProjectCourseTeamsDTO.
+     */
+    @GetMapping("/projects/{projectId}/course-teams")
+    public ResponseEntity<ProjectCourseTeamsDTO> getProjectCourseAndTeamCount(@PathVariable Long projectId) {
+        return ResponseEntity.ok(projectService.getProjectCourseAndTeamCount(projectId));
     }
 }

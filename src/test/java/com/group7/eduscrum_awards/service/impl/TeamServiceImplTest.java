@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.exception.DuplicateResourceException;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
+import com.group7.eduscrum_awards.dto.DeveloperDTO;
 import com.group7.eduscrum_awards.dto.TeamCreateDTO;
 import com.group7.eduscrum_awards.dto.TeamDTO;
 import com.group7.eduscrum_awards.dto.TeamMemberCreateDTO;
@@ -14,6 +15,8 @@ import com.group7.eduscrum_awards.model.Project;
 import com.group7.eduscrum_awards.model.Team;
 import com.group7.eduscrum_awards.model.TeamMember;
 import com.group7.eduscrum_awards.repository.ProjectRepository;
+import com.group7.eduscrum_awards.repository.SprintRepository;
+import com.group7.eduscrum_awards.repository.TaskRepository;
 import com.group7.eduscrum_awards.repository.TeamRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 import com.group7.eduscrum_awards.repository.TeamMemberRepository;
@@ -57,9 +60,14 @@ class TeamServiceImplTest {
     @Mock
     private TeamMemberRepository teamMemberRepository;
 
+    @Mock
+    private SprintRepository sprintRepository;
+
+    @Mock
+    private TaskRepository taskRepository;
+
     @InjectMocks
     private TeamServiceImpl teamService;
-
 
     private Project existingProject;
     private TeamCreateDTO createDTO;
@@ -314,5 +322,141 @@ class TeamServiceImplTest {
         assertEquals(1, result.size());
         assertEquals("Alice", result.get(0).getName());
         assertEquals(TeamRole.PRODUCT_OWNER, result.get(0).getRole());
+    }
+
+    // --- Tests for getTeamsByCourse ---
+
+    @Test
+    @DisplayName("getTeamsByCourse | Should return list of teams for a course")
+    void testGetTeamsByCourse() {
+        Long courseId = 50L;
+        Team courseTeam = new Team("Course Team", 1, existingProject);
+        courseTeam.setId(20L);
+
+        when(teamRepository.findTeamsByCourseId(courseId)).thenReturn(List.of(courseTeam));
+
+        List<TeamDTO> result = teamService.getTeamsByCourse(courseId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Course Team", result.get(0).getName());
+        verify(teamRepository, times(1)).findTeamsByCourseId(courseId);
+    }
+
+    // Tests for getDevelopersByContext
+
+    @Test
+    @DisplayName("getDevelopersByContext | Should return developers using Sprint ID")
+    void testGetDevelopersByContext_SprintId() {
+        Long sprintId = 1L;
+        String userEmail = "student@test.com";
+
+        com.group7.eduscrum_awards.model.Sprint sprint = new com.group7.eduscrum_awards.model.Sprint();
+        sprint.setId(sprintId);
+        sprint.setProject(existingProject);
+
+        when(sprintRepository.findById(sprintId)).thenReturn(Optional.of(sprint));
+
+        when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(existingStudent));
+
+        Team team = new Team("Dev Team", 1, existingProject);
+
+        TeamMember myMembership = new TeamMember();
+        myMembership.setStudent(existingStudent);
+        myMembership.setTeam(team);
+        myMembership.setTeamRole(TeamRole.DEVELOPER);
+
+        Student devStudent = new Student("Dev", "dev@test.com", "pass");
+        TeamMember devMember = new TeamMember();
+        devMember.setStudent(devStudent);
+        devMember.setTeam(team);
+        devMember.setTeamRole(TeamRole.DEVELOPER);
+
+        Student smStudent = new Student("SM", "sm@test.com", "pass");
+        TeamMember smMember = new TeamMember();
+        smMember.setStudent(smStudent);
+        smMember.setTeam(team);
+        smMember.setTeamRole(TeamRole.SCRUM_MASTER);
+
+        team.getMembers().add(myMembership);
+        team.getMembers().add(devMember);
+        team.getMembers().add(smMember);
+
+        when(teamMemberRepository.findByStudentAndProject(existingStudent, existingProject))
+                .thenReturn(Optional.of(myMembership));
+
+        List<DeveloperDTO> result = teamService.getDevelopersByContext(sprintId, null, userEmail);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(sprintRepository).findById(sprintId);
+        verify(taskRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("getDevelopersByContext | Should return developers using Task ID")
+    void testGetDevelopersByContext_TaskId() {
+        Long taskId = 5L;
+        String userEmail = "student@test.com";
+
+        com.group7.eduscrum_awards.model.Sprint sprint = new com.group7.eduscrum_awards.model.Sprint();
+        sprint.setProject(existingProject);
+        
+        com.group7.eduscrum_awards.model.Task task = new com.group7.eduscrum_awards.model.Task();
+        task.setId(taskId);
+        task.setSprint(sprint);
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+
+        when(userRepository.findByEmail(userEmail)).thenReturn(Optional.of(existingStudent));
+        
+        Team team = new Team("Dev Team", 1, existingProject);
+        TeamMember myMembership = new TeamMember();
+        myMembership.setStudent(existingStudent);
+        myMembership.setTeam(team);
+        myMembership.setTeamRole(TeamRole.DEVELOPER);
+        team.getMembers().add(myMembership);
+
+        when(teamMemberRepository.findByStudentAndProject(existingStudent, existingProject))
+                .thenReturn(Optional.of(myMembership));
+
+        List<DeveloperDTO> result = teamService.getDevelopersByContext(null, taskId, userEmail);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(taskRepository).findById(taskId);
+    }
+
+    @Test
+    @DisplayName("getDevelopersByContext | Should throw IllegalArgumentException when no ID provided")
+    void testGetDevelopersByContext_Failure_NoIds() {
+        assertThrows(IllegalArgumentException.class, () -> 
+            teamService.getDevelopersByContext(null, null, "email@test.com")
+        );
+    }
+
+    @Test
+    @DisplayName("getDevelopersByContext | Should throw ResourceNotFoundException when User not found")
+    void testGetDevelopersByContext_Failure_UserNotFound() {
+        when(sprintRepository.findById(1L)).thenReturn(Optional.of(new com.group7.eduscrum_awards.model.Sprint()));
+        when(userRepository.findByEmail("unknown@test.com")).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> 
+            teamService.getDevelopersByContext(1L, null, "unknown@test.com")
+        );
+    }
+
+    @Test
+    @DisplayName("getDevelopersByContext | Should throw IllegalArgumentException when User is not Student")
+    void testGetDevelopersByContext_Failure_NotStudent() {
+        com.group7.eduscrum_awards.model.Sprint sprint = new com.group7.eduscrum_awards.model.Sprint();
+        sprint.setProject(existingProject);
+        when(sprintRepository.findById(1L)).thenReturn(Optional.of(sprint));
+        
+        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(adminUser));
+
+        assertThrows(IllegalArgumentException.class, () -> 
+            teamService.getDevelopersByContext(1L, null, "admin@test.com")
+        );
     }
 }
