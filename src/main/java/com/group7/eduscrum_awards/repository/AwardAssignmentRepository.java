@@ -151,7 +151,7 @@ public interface AwardAssignmentRepository extends JpaRepository<AwardAssignment
      * Counts the number of AwardAssignments for a specific student.
      * 
      * @param studentId the ID of the student
-     * @return
+     * @return the count of AwardAssignments for the student
      */
     @Query("SELECT COUNT(aa) FROM AwardAssignment aa WHERE aa.student.id = :studentId")
     int countByStudentId(@Param("studentId") Long studentId);
