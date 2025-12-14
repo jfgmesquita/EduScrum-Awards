@@ -265,6 +265,9 @@ public class ProjectServiceImpl implements ProjectService {
             .filter(u -> u instanceof Student)
             .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
 
+        if (student.getDegree() == null) {
+            throw new ResourceNotFoundException("Student with id " + studentId + " is not assigned to any degree.");
+        }
         Long degreeId = student.getDegree().getId();
 
         // Fetch projects for the student
