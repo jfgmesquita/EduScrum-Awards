@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.service;
 
 import java.util.List;
 
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
@@ -110,4 +111,13 @@ public interface ProjectService {
      * @throws ResourceNotFoundException if the student does not exist.
      */
     public StudentDashboardDTO getStudentDashboardWithStats(Long studentId);
+
+    /**
+     * Retrieves the course name and number of teams for a specific project.
+     *
+     * @param projectId The ID of the project.
+     * @return an {@link ProjectCourseTeamsDTO}.
+     * @throws ResourceNotFoundException if the project does not exist.
+     */
+    public ProjectCourseTeamsDTO getProjectCourseAndTeamCount(Long projectId);
 }
