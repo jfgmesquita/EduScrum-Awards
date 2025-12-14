@@ -6,7 +6,6 @@ import com.group7.eduscrum_awards.dto.AwardDTO;
 import com.group7.eduscrum_awards.dto.StudentAwardDTO;
 import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.*;
-import com.group7.eduscrum_awards.model.enums.AwardScope;
 import com.group7.eduscrum_awards.model.enums.AwardType;
 import com.group7.eduscrum_awards.repository.*;
 import com.group7.eduscrum_awards.service.AwardService;
@@ -64,7 +63,7 @@ public class AwardServiceImpl implements AwardService {
             createDTO.getDescription(),
             createDTO.getPoints(),
             AwardType.MANUAL,
-            AwardScope.STUDENT,
+            createDTO.getScope(),
             null,
             course
         );
