@@ -102,6 +102,7 @@ class TaskServiceImplTest {
 
         // Scrum Master Membership
         smMembership = new TeamMember();
+        smMembership.setId(3L);
         smMembership.setStudent(smStudent);
         smMembership.setProject(existingProject);
         smMembership.setTeamRole(TeamRole.SCRUM_MASTER);
