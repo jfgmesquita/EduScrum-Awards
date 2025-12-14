@@ -364,4 +364,86 @@ class CourseServiceImplTest {
         
         verify(courseRepository, times(1)).findCoursesByTeacherId(teacherId);
     }
+
+    // Tests for getCourseById
+
+    @Test
+    @DisplayName("getCourseById | Should return course DTO when found")
+    void testGetCourseById_Success() {
+        Long id = 99L;
+        when(courseRepository.findById(id)).thenReturn(Optional.of(existingCourse));
+
+        CourseDTO result = courseService.getCourseById(id);
+
+        assertNotNull(result);
+        assertEquals(existingCourse.getName(), result.getName());
+        assertEquals(id, result.getId());
+        
+        verify(courseRepository).findById(id);
+    }
+
+    @Test
+    @DisplayName("getCourseById | Should throw ResourceNotFoundException when not found")
+    void testGetCourseById_Failure_NotFound() {
+        Long id = 999L;
+        when(courseRepository.findById(id)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> courseService.getCourseById(id)
+        );
+
+        assertEquals("Course not found: " + id, exception.getMessage());
+        
+        verify(courseRepository).findById(id);
+    }
+
+    // Tests for getCoursesByStudent
+
+    @Test
+    @DisplayName("getCoursesByStudent | Should return list of courses for a student")
+    void testGetCoursesByStudent_Success() {
+        Long studentId = 5L;
+
+        existingStudent.setCourses(new HashSet<>(Arrays.asList(existingCourse)));
+
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(existingStudent));
+
+        List<CourseDTO> result = courseService.getCoursesByStudent(studentId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(existingCourse.getName(), result.get(0).getName());
+        
+        verify(userRepository).findById(studentId);
+    }
+
+    @Test
+    @DisplayName("getCoursesByStudent | Should throw ResourceNotFoundException when student not found")
+    void testGetCoursesByStudent_Failure_StudentNotFound() {
+        Long studentId = 999L;
+        when(userRepository.findById(studentId)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> courseService.getCoursesByStudent(studentId)
+        );
+        
+        assertEquals("Student not found: " + studentId, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("getCoursesByStudent | Should throw ResourceNotFoundException when user is not a student")
+    void testGetCoursesByStudent_Failure_UserNotStudent() {
+        Long adminId = 4L;
+
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(adminUser));
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> courseService.getCoursesByStudent(adminId)
+        );
+        
+        assertEquals("Student not found: " + adminId, exception.getMessage());
+    }
 }
