@@ -1,6 +1,8 @@
 package com.group7.eduscrum_awards.service.impl;
 
 import com.group7.eduscrum_awards.dto.RankingItemDTO;
+import com.group7.eduscrum_awards.model.Degree;
+import com.group7.eduscrum_awards.model.Student;
 import com.group7.eduscrum_awards.repository.AwardAssignmentRepository;
 import com.group7.eduscrum_awards.repository.UserRepository;
 
@@ -13,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -75,18 +78,22 @@ class RankingServiceImplTest {
     @DisplayName("getStudentDashboardRankings | Should assemble data correctly")
     void testGetStudentDashboardRankings() {
         Long studentId = 1L;
+        Long degreeId = 10L;
         
-        // Mock Student
-        com.group7.eduscrum_awards.model.Student student = new com.group7.eduscrum_awards.model.Student();
+        Degree degree = new Degree();
+        degree.setId(degreeId);
+        degree.setName("Computer Science");
+
+        Student student = new Student();
         student.setId(studentId);
-        student.setCourses(new java.util.HashSet<>()); // Empty courses for simplicity
+        student.setDegree(degree);
+        student.setCourses(new java.util.HashSet<>());
         
-        when(userRepository.findById(studentId)).thenReturn(java.util.Optional.of(student));
+        when(userRepository.findById(studentId)).thenReturn(Optional.of(student));
         
-        // Mock Global Rankings
-        // (You would need to create a helper to mock the Projection interface, 
-        //  or use a concrete class that implements the interface for testing)
-        when(assignmentRepository.findGlobalStudentRankings()).thenReturn(List.of());
+        lenient().when(assignmentRepository.findGlobalStudentRankings()).thenReturn(List.of());
+        
+        lenient().when(assignmentRepository.findStudentRankingByDegree(degreeId)).thenReturn(List.of());
 
         var result = rankingService.getStudentDashboardRankings(studentId);
         
