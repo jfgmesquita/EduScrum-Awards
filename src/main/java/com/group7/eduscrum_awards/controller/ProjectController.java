@@ -1,5 +1,6 @@
 package com.group7.eduscrum_awards.controller;
 
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
@@ -187,5 +188,17 @@ public class ProjectController {
     
         StudentDashboardDTO dashboard = projectService.getStudentDashboardWithStats(studentId);
         return ResponseEntity.ok(dashboard);
+    }
+
+    /**
+     * Endpoint to retrieve the course name and number of teams for a specific project.
+     * Accessible via: GET /api/v1/projects/{projectId}/course-teams
+     *
+     * @param projectId The ID of the project.
+     * @return A ResponseEntity containing the ProjectCourseTeamsDTO.
+     */
+    @GetMapping("/projects/{projectId}/course-teams")
+    public ResponseEntity<ProjectCourseTeamsDTO> getProjectCourseAndTeamCount(@PathVariable Long projectId) {
+        return ResponseEntity.ok(projectService.getProjectCourseAndTeamCount(projectId));
     }
 }
