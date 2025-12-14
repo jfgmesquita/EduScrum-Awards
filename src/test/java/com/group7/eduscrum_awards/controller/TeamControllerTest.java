@@ -156,4 +156,24 @@ class TeamControllerTest {
                 .andExpect(jsonPath("$[0].userId").value(5L))
                 .andExpect(jsonPath("$[0].role").value("SCRUM_MASTER"));
     }
+
+    @Test
+    @DisplayName("getTeamsByCourse | Should return list of teams for a specific course")
+    @WithMockUser(roles = "TEACHER")
+    void testGetTeamsByCourse() throws Exception {
+        Long courseId = 20L;
+        
+        Team team = new Team();
+        team.setId(2L);
+        team.setName("Course Team A");
+        TeamDTO teamDTO = new TeamDTO(team);
+
+        when(teamService.getTeamsByCourse(courseId)).thenReturn(List.of(teamDTO));
+
+        mockMvc.perform(get("/api/v1/courses/{courseId}/teams", courseId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()").value(1))
+                .andExpect(jsonPath("$[0].name").value("Course Team A"));
+    }
 }
