@@ -1,5 +1,6 @@
 package com.group7.eduscrum_awards.service.impl;
 
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
@@ -431,5 +432,36 @@ class ProjectServiceImplTest {
         assertEquals(3, result.getRanking());
         
         verify(teamMemberRepository).countTasksByStudentTeamsAndStatus(studentId, TaskStatus.DONE);
+    }
+
+    @Test
+    @DisplayName("getProjectCourseAndTeamCount | Should return course name and team count")
+    void testGetProjectCourseAndTeamCount() {
+
+        Long projectId = 1L;
+        ProjectCourseTeamsDTO expectedDTO = new ProjectCourseTeamsDTO("Software Engineering", 5L);
+
+        when(projectRepository.findCourseNameAndTeamCountByProjectId(projectId))
+                .thenReturn(Optional.of(expectedDTO));
+
+        ProjectCourseTeamsDTO result = projectService.getProjectCourseAndTeamCount(projectId);
+
+        assertNotNull(result);
+        assertEquals("Software Engineering", result.getCourseName());
+        assertEquals(5L, result.getNumberOfTeams());
+        
+        verify(projectRepository).findCourseNameAndTeamCountByProjectId(projectId);
+    }
+
+    @Test
+    @DisplayName("getProjectCourseAndTeamCount | Should throw exception when project not found")
+    void testGetProjectCourseAndTeamCount_NotFound() {
+        Long projectId = 99L;
+        when(projectRepository.findCourseNameAndTeamCountByProjectId(projectId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> 
+            projectService.getProjectCourseAndTeamCount(projectId)
+        );
     }
 }
