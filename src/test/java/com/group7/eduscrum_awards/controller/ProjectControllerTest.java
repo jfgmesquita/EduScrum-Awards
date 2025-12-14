@@ -2,6 +2,7 @@ package com.group7.eduscrum_awards.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
+import com.group7.eduscrum_awards.dto.ProjectCourseTeamsDTO;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
@@ -9,6 +10,7 @@ import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
+import com.group7.eduscrum_awards.exception.ResourceNotFoundException;
 import com.group7.eduscrum_awards.model.enums.Role;
 import com.group7.eduscrum_awards.service.JwtService;
 import com.group7.eduscrum_awards.service.ProjectService;
@@ -324,5 +326,40 @@ class ProjectControllerTest {
                 .andExpect(status().isForbidden());
         
         verify(projectService, never()).getStudentDashboardWithStats(anyLong());
+    }
+
+    @Test
+    @DisplayName("getProjectCourseAndTeamCount | Should return 200 OK and DTO when project exists")
+    @WithMockUser(username = "teacher@test.com", roles = "TEACHER")
+    void testGetProjectCourseAndTeamCount_Success() throws Exception {
+        Long projectId = 1L;
+        ProjectCourseTeamsDTO expectedDTO = new ProjectCourseTeamsDTO("Software Engineering", 5L);
+
+        when(projectService.getProjectCourseAndTeamCount(projectId)).thenReturn(expectedDTO);
+
+        mockMvc.perform(get("/api/v1/projects/{projectId}/course-teams", projectId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.courseName").value("Software Engineering"))
+                .andExpect(jsonPath("$.numberOfTeams").value(5));
+        
+        verify(projectService).getProjectCourseAndTeamCount(projectId);
+    }
+
+    @Test
+    @DisplayName("getProjectCourseAndTeamCount | Should return 404 Not Found when project does not exist")
+    @WithMockUser(username = "teacher@test.com", roles = "TEACHER")
+    void testGetProjectCourseAndTeamCount_NotFound() throws Exception {
+
+        Long projectId = 99L;
+
+        when(projectService.getProjectCourseAndTeamCount(projectId))
+                .thenThrow(new ResourceNotFoundException("Project not found"));
+
+        mockMvc.perform(get("/api/v1/projects/{projectId}/course-teams", projectId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+        
+        verify(projectService).getProjectCourseAndTeamCount(projectId);
     }
 }
