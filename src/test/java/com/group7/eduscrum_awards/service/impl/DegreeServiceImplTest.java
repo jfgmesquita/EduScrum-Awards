@@ -240,4 +240,35 @@ class DegreeServiceImplTest {
 
         assertEquals("New Name", result.getName());
     }
+
+    @Test
+    @DisplayName("getDegreeById | Should return degree DTO when found")
+    void testGetDegreeById_Success() {
+        Long id = 1L;
+        when(degreeRepository.findById(id)).thenReturn(Optional.of(existingDegree));
+
+        DegreeDTO result = degreeService.getDegreeById(id);
+
+        assertNotNull(result);
+        assertEquals(existingDegree.getName(), result.getName());
+        assertEquals(id, result.getId());
+        
+        verify(degreeRepository).findById(id);
+    }
+
+    @Test
+    @DisplayName("getDegreeById | Should throw ResourceNotFoundException when not found")
+    void testGetDegreeById_Failure_NotFound() {
+        Long id = 99L;
+        when(degreeRepository.findById(id)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
+            () -> degreeService.getDegreeById(id)
+        );
+
+        assertEquals("Degree not found: " + id, exception.getMessage());
+        
+        verify(degreeRepository).findById(id);
+    }
 }
