@@ -5,6 +5,7 @@ import com.group7.eduscrum_awards.config.JwtAuthenticationFilter;
 import com.group7.eduscrum_awards.dto.ProjectCreateDTO;
 import com.group7.eduscrum_awards.dto.ProjectDTO;
 import com.group7.eduscrum_awards.dto.UserDTO;
+import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardDTO;
 import com.group7.eduscrum_awards.dto.dashboard.StudentDashboardProjectDTO;
 import com.group7.eduscrum_awards.dto.dashboard.TeacherProjectDetailsDTO;
 import com.group7.eduscrum_awards.dto.teacher.ProjectSummaryDTO;
@@ -29,6 +30,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -279,5 +281,48 @@ class ProjectControllerTest {
                 .andExpect(status().isForbidden());
                 
         verify(projectService, never()).getProjectById(any());
+    }
+
+    @Test
+    @DisplayName("getStudentStats | Should return 200 OK when user is authorized")
+    @WithMockUser(username = "john@test.com", roles = "STUDENT")
+    void testGetStudentStats_Success() throws Exception {
+        Long studentId = 1L;
+        
+        // Mock User Service for IDOR check
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(studentId);
+        userDTO.setEmail("john@test.com");
+        when(userService.getUserByEmail("john@test.com")).thenReturn(userDTO);
+
+        // Mock Service response
+        StudentDashboardDTO dashboardDTO = new StudentDashboardDTO();
+        dashboardDTO.setTotalScore(100L);
+        when(projectService.getStudentDashboardWithStats(studentId)).thenReturn(dashboardDTO);
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", studentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalScore").value(100));
+    }
+
+    @Test
+    @DisplayName("getStudentStats | Should return 403 Forbidden when IDOR detected")
+    @WithMockUser(username = "hacker@test.com", roles = "STUDENT")
+    void testGetStudentStats_Forbidden_IDOR() throws Exception {
+        Long targetStudentId = 1L;
+        Long hackerId = 99L;
+
+        // Mock User Service returning a different ID than the requested one
+        UserDTO hackerUser = new UserDTO();
+        hackerUser.setId(hackerId);
+        hackerUser.setEmail("hacker@test.com");
+        when(userService.getUserByEmail("hacker@test.com")).thenReturn(hackerUser);
+
+        mockMvc.perform(get("/api/v1/students/{studentId}/dashboard", targetStudentId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+        
+        verify(projectService, never()).getStudentDashboardWithStats(anyLong());
     }
 }
