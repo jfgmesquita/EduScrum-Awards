@@ -9,13 +9,13 @@
 
 This repository contains the **Backend RESTful API**.
 
-### 🔗 Related Repositories
+### Related Repositories
 
   * **Frontend Application:** [EduScrum-Frontend](https://github.com/devyssonsc/Edu-Scrum-Frontend)
 
 -----
 
-## 🛠 Tech Stack
+## Tech Stack
 
 The architecture follows a strict layered MVC pattern (Controller, Service, Repository).
 
@@ -27,7 +27,7 @@ The architecture follows a strict layered MVC pattern (Controller, Service, Repo
 
 -----
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -86,7 +86,7 @@ The system initializes with a default Admin account:
 
 -----
 
-## 🔒 Security & JWT
+## Security & JWT
 
 This API uses **Stateless Authentication** via JSON Web Tokens (JWT).
 
@@ -100,7 +100,7 @@ This API uses **Stateless Authentication** via JSON Web Tokens (JWT).
 
 -----
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 A comprehensive testing strategy was implemented to ensure quality and performance:
 
