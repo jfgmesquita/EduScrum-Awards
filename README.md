@@ -1,17 +1,10 @@
-
------
-
 # EduScrum Awards - Backend API
 
-   
-
-**EduScrum Awards** is a gamification platform designed to support Scrum methodology teaching in academic environments. This API manages users (Students, Teachers, Admins), degrees, courses, projects, teams, sprints, tasks, and a complex awarding/ranking system.
+**EduScrum Awards** is a gamification platform designed to support Scrum methodology teaching in academic environments. This API manages users (Students, Teachers, Admins), degrees, courses, projects, teams, sprints, tasks and a awarding/ranking system.
 
 This repository contains the **Backend RESTful API**.
 
-### Related Repositories
-
-  * **Frontend Application:** [EduScrum-Frontend](https://github.com/devyssonsc/Edu-Scrum-Frontend)
+  * **Frontend Repository:** [EduScrum-Frontend](https://github.com/devyssonsc/Edu-Scrum-Frontend)
 
 -----
 
@@ -37,7 +30,7 @@ Ensure you have the following installed:
   * Apache Maven
   * MySQL Server (running on port 3306)
 
-### 1. Database Configuration
+### Database Configuration
 
 For security reasons, the `application-dev.properties` file is included in `.gitignore`. You must configure your local database credentials before running the app.
 
@@ -58,7 +51,7 @@ spring.jpa.hibernate.ddl-auto=update
 jwt.secret.key=UkruTJWQ3xSe5UV/e/wtlRKBYued5t33FZujm7ovadgtHJdv8cxRxMR0MDQTOvmVqWboB1BtxuWZRQq77qkJWw==
 ```
 
-### 2. Installation
+### Installation
 
 Install dependencies and run unit tests:
 
@@ -66,7 +59,7 @@ Install dependencies and run unit tests:
 mvn clean install
 ```
 
-### 3. Running the Application
+### Running the Application
 
 To run the server using the **development profile**:
 
@@ -74,10 +67,9 @@ To run the server using the **development profile**:
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-
 The API will be available at `http://localhost:8080`.
 
-### 4. Default Credentials
+### Default Credentials
 
 The system initializes with a default Admin account:
 
@@ -86,17 +78,17 @@ The system initializes with a default Admin account:
 
 -----
 
-## Security & JWT
+## JWT
 
 This API uses **Stateless Authentication** via JSON Web Tokens (JWT).
 
   * The server does not store sessions in memory.
   * Upon login (`/api/v1/auth/login`), the server returns an `access_token`.
   * All subsequent requests to protected endpoints must include the token in the **Authorization Header**:
+
     ```
     Authorization: Bearer <YOUR_TOKEN_HERE>
     ```
-  * **IDOR Protection:** The system implements strict checks to ensure users (Students) can only access their own private data (e.g., Dashboards).
 
 -----
 
