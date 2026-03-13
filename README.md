@@ -1,10 +1,7 @@
 # EduScrum Awards - Backend API
+###### Frontend Repository: [devyssonsc/Edu-Scrum-Frontend](https://github.com/devyssonsc/Edu-Scrum-Frontend)
 
 **EduScrum Awards** is a gamification platform designed to support Scrum methodology teaching in academic environments. This API manages users (Students, Teachers, Admins), degrees, courses, projects, teams, sprints, tasks and a awarding/ranking system.
-
-This repository contains the **Backend RESTful API**.
-
-  * **Frontend Repository:** [EduScrum-Frontend](https://github.com/devyssonsc/Edu-Scrum-Frontend)
 
 -----
 
